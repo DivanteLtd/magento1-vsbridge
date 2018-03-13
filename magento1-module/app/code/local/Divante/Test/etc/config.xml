@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Divante_Test>
+            <version>1.0.0</version>
+        </Divante_Test>
+    </modules>
+    <global>
+    </global>
+</config>
