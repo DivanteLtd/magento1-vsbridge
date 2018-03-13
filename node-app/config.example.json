@@ -1,0 +1,14 @@
+{
+    "elasticsearch": {
+        "host": "",
+        "indexName": "vue_storefront_magento1"
+    },
+    "vsbridge": {
+        "url": "http://dockerized-magento.local:80/",
+        "apKey": "test",
+        "product_endpoint": "http://dockerized-magento.local:80/vsbridge/products/index",
+        "category_endpoint": "http://dockerized-magento.local:80/vsbridge/categories/index",
+        "taxrule_endpoint": "http://dockerized-magento.local:80/vsbridge/taxrules/index",
+        "attribute_endpoint": "http://dockerized-magento.local:80/vsbridge/attributes/index"
+    }
+}
