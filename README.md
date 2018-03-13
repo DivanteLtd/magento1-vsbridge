@@ -1,2 +1,2 @@
 # magento1-vsbridge
-This is an Vue Storefront bridge for Magento1 - extended API module
+This is a Vue Storefront bridge for Magento1 - extended API module. Work in progress!
