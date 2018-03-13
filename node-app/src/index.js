@@ -14,6 +14,8 @@ const shell = require('shelljs')
 const fs = require('fs')
 const jsonFile = require('jsonfile')
 
+const putMappings = require('./meta/elastic')
+
 
 let INDEX_VERSION = 1
 let INDEX_META_DATA
@@ -89,6 +91,8 @@ function recreateTempIndex() {
         client.indices.create({ index: `${config.elasticsearch.indexName}_${INDEX_VERSION}` }).then(result=>{
             console.log('Index Created', result)
             console.log('** NEW INDEX VERSION', INDEX_VERSION, INDEX_META_DATA.created)
+        }).then((result) => {
+            putMappings(client, `${config.elasticsearch.indexName}_${INDEX_VERSION}`, ()  => {})
         })
     }
 
@@ -97,10 +101,10 @@ function recreateTempIndex() {
         index: `${config.elasticsearch.indexName}_${INDEX_VERSION}`
     }).then((result) => {
         console.log('Index deleted', result)
-        step2()
+        return step2()
     }).catch((err) => {
         console.log('Index does not exst')
-        step2()
+        return step2()
     })
 }
 
@@ -245,28 +249,6 @@ cli.command('publish',  () => {
     publishTempIndex()
 });
 
-
-/**
- * Download asset and return the meta data as a JSON 
- */
-cli.command('asset', () => {
-    if(!cli.options.id) {
-        console.log(JSON.stringify({ status: -1, message: 'Please provide asset Id' }))
-        process.exit(-1)
-    }
-    api.get(`asset/id/${cli.options.id}`).end((resp) => {
-        if(resp.body && resp.body.data) {
-            const imageName =  resp.body.data.filename
-            const imageRelativePath = resp.body.data.path
-            const imageAbsolutePath = path.join(config.pimcore.assetsPath, imageRelativePath, imageName)
-            
-            shell.mkdir('-p', path.join(config.pimcore.assetsPath, imageRelativePath))
-            fs.writeFileSync(imageAbsolutePath, Buffer.from(resp.body.data.data, 'base64'))
-            console.log(JSON.stringify({ status: 0, message: 'Image downloaded!', absolutePath: imageAbsolutePath, relativePath: path.join(imageRelativePath, imageName) }))
-        }
-    })    
-})
-
 cli.on('notfound', (action) => {
   console.error('I don\'t know how to: ' + action)
   process.exit(1)
@@ -291,32 +273,7 @@ INDEX_VERSION = INDEX_META_DATA.version
   // RUN
 cli.parse(process.argv);
 
-
-// FOR DEV/DEBUG PURPOSES
-
-cli.command('testcategory',  () => {
-    let importer = new BasicImporter('category', new CategoryImpoter(config, api, client), config, api, client) // ProductImporter can be switched to your custom data mapper of choice
-    importer.single({ id: 11148 }).then((results) => {
-        let fltResults = _.flattenDeep(results)
-        let obj = fltResults.find((it) => it.dst.id === 11148)
-        console.log('CATEGORIES', fltResults.length, obj, obj.dst.children_data)
-        console.log('ATTRIBUTES', attribute.getMap())
-        console.log('CO', obj.dst.configurable_options)
-     }).catch((reason) => { console.error(reason) })
- });
  
-
-cli.command('testproduct',  () => {
-   let importer = new BasicImporter('product', new ProductImpoter(config, api, client), config, api, client) // ProductImporter can be switched to your custom data mapper of choice
-   importer.single({ id: 1237 }).then((results) => {
-       let fltResults = _.flatten(results)
-       let obj = fltResults.find((it) => it.dst.id === 1237)
-       console.log('PRODUCTS', fltResults.length, obj, obj.dst.configurable_children)
-       console.log('ATTRIBUTES', attribute.getMap())
-       console.log('CO', obj.dst.configurable_options)
-    }).catch((reason) => { console.error(reason) })
-});
-  
 // Using a single function to handle multiple signals
 function handle(signal) {
     console.log('Received  exit signal. Bye!');
