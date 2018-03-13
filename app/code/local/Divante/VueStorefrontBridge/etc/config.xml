@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Divante_VueStorefrontBridge>
+            <version>1.0.1</version>
+        </Divante_VueStorefrontBridge>
+    </modules>
+  <frontend>
+        <routers>
+            <vsbrdige>
+                <use>standard</use>
+                <args>
+                    <module>Divante_VueStorefrontBridge</module>
+                    <frontName>vsbrdige</frontName>
+                </args>
+            </vsbrdige>
+        </routers>
+    </frontend>    
+    <global>
+    </global>
+</config>

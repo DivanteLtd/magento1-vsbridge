@@ -1,0 +1,15 @@
+{
+    "name": "Divante/VueStorefrontBridge",
+    "license": "OSL-3.0",
+    "type": "magento-module",
+    "description": "Add your description here",
+    "require": {
+        "magento-hackathon/magento-composer-installer": "*"
+    },
+    "authors":[
+        {
+            "name":"Add your name here",
+            "email":"Add your email address here"
+        }
+    ]
+}
