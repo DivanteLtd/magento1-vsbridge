@@ -16,7 +16,7 @@ module.exports = class {
      */
     single(object) {
         return new Promise(((resolve, reject) => {
-            resolve(object); // no additional processing
+            resolve([object]); // no additional processing
         }))
     }
 }

@@ -22,7 +22,9 @@ class VsBridgeApiClient {
         return unirest.headers({'Accept': 'application/json', 'Content-Type': 'application/json'})        
     }
     _setupUrl(endpointUrl) {
-        return endpointUrl + '?apikey=' + this.apiKey
+        const url = endpointUrl + '?apikey=' + this.apiKey
+        console.log(url)
+        return url
     }
     post(endpointName) {
         return this._setupRequest(this.client.post(this._setupUrl(endpointName)))

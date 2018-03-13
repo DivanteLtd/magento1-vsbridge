@@ -161,13 +161,12 @@ function importListOf(entityType, importer, config, api, page = 0, pageSize = 10
         let generalQueue = []
         console.log('*** Getting objects list for', query)
         api.get(config.vsbridge[entityType + '_endpoint']).query(query).end((resp) => {
-            console.log(resp)
             let queue = []
             let index = 0
             for(let obj of resp.body) { // process single record
                 let promise = importer.single(obj).then((singleResults) => {
                     storeResults(singleResults, entityType)
-                    console.log('* Record done for ', obj.id, index, count)
+                    console.log('* Record done for ', obj.id, index, pageSize)
                     index++
                 })
                 if(cli.params.runSerial)
@@ -205,18 +204,33 @@ cli.command('products',  () => { // TODO: add parallel processing
 })    
 
 cli.command('taxrules',  () => {
+    importListOf('taxrule', new BasicImporter('taxrule', config, api, page = cli.options.page, pageSize = cli.options.pageSize), config, api, page = cli.options.page, pageSize = cli.options.pageSize).then((result) => {
+ 
+    }).catch(err => {
+       console.error(err)
+    })       
+
 });
 
 cli.command('attributes',  () => {
+    showWelcomeMsg()
+
+    importListOf('attribute', new BasicImporter('attribute', config, api, page = cli.options.page, pageSize = cli.options.pageSize), config, api, page = cli.options.page, pageSize = cli.options.pageSize).then((result) => {
+ 
+    }).catch(err => {
+       console.error(err)
+    })       
 });
 
 cli.command('categories',  () => { 
     showWelcomeMsg()
-    let importer = new BasicImporter('category', new CategoryImpoter(config, api, client), config, api, client) // ProductImporter can be switched to your custom data mapper of choice
-    importer.single({ id: config.pimcore.rootCategoryId }, level = 1, parent_id = 1).then((results) => {
-        let fltResults = _.flattenDeep(results)
-        storeResults(fltResults, 'category')
-     })});
+
+    importListOf('category', new BasicImporter('category', config, api, page = cli.options.page, pageSize = cli.options.pageSize), config, api, page = cli.options.page, pageSize = cli.options.pageSize).then((result) => {
+ 
+    }).catch(err => {
+       console.error(err)
+    })    
+});
 
 
 
