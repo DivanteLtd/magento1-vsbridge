@@ -23,7 +23,14 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
             $productAttrDTO = $productAttr->getData();
             $productAttrDTO['id'] = intval($productAttr->attribute_id);
             $productAttrDTO['options'] = $options;
-            $attrList[] = productAttrDTO;
+
+            foreach($productAttrDTO as $key => $val) {
+                if(strstr($key, 'is_')) {
+                    $productAttrDTO[$key] = boolval($val);
+                }
+            }
+
+            $attrList[] = $productAttrDTO;
         }
         $this->getResponse()->setBody(json_encode($attrList, JSON_NUMERIC_CHECK ));
     }

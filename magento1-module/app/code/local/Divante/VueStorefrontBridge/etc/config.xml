@@ -2,18 +2,18 @@
 <config>
     <modules>
         <Divante_VueStorefrontBridge>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </Divante_VueStorefrontBridge>
     </modules>
   <frontend>
         <routers>
-            <vsbrdige>
+            <vsbridge>
                 <use>standard</use>
                 <args>
                     <module>Divante_VueStorefrontBridge</module>
-                    <frontName>vsbrdige</frontName>
+                    <frontName>vsbridge</frontName>
                 </args>
-            </vsbrdige>
+            </vsbridge>
         </routers>
     </frontend>    
     <global>
