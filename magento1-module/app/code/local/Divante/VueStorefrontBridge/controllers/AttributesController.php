@@ -13,7 +13,7 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
         $attrList = array();
         foreach ($productAttrs as $productAttr) { /** @var Mage_Catalog_Model_Resource_Eav_Attribute $productAttr */
             $attribute = Mage::getSingleton('eav/config')
-            ->getAttribute(Mage_Catalog_Model_Product::ENTITY, 'color');
+            ->getAttribute(Mage_Catalog_Model_Product::ENTITY, $productAttr->getAttributeCode());
 
             $options = array();
             if ($attribute->usesSource()) {
@@ -21,6 +21,9 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
             }
 
             $productAttrDTO = $productAttr->getData();
+
+            if(in_array($productAttrDTO['source_model'], array('core/design_source_design'))) continue; // exception - this attribute has string typed values; this is not acceptable by VS
+
             $productAttrDTO['id'] = intval($productAttr->attribute_id);
             $productAttrDTO['options'] = $options;
 

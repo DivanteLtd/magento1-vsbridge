@@ -58,8 +58,8 @@ function putMappings(db, indexName, next) {
                                 default_label: { type: "text"},
                                 label: { type: "text"},
                                 frontend_label: { type: "text"},                           
-                                store_label: { type: "text"}                            
-                                
+                                store_label: { type: "text"},
+                                value_index:  { type: "string", "index" : "not_analyzed" }                          
                             }
                         }
                     }
@@ -72,27 +72,48 @@ function putMappings(db, indexName, next) {
             }
         }
         }).then(res1 => {
-        console.dir(res1, { depth: null, colors: true })
+            console.dir(res1, { depth: null, colors: true })
 
-        db.indices.putMapping({
-            index: indexName,
-            type: "taxrule",
-            body: {
-            properties: {
-                id: { type: "long" },
-                rates: {
+            db.indices.putMapping({
+                index: indexName,
+                type: "taxrule",
+                body: {
                 properties: {
-                    rate: { type: "float" }
+                    id: { type: "long" },
+                    rates: {
+                    properties: {
+                        rate: { type: "float" }
+                    }
+                    }
                 }
                 }
-            }
-            }
-        }).then(res2 => {
-            console.dir(res2, { depth: null, colors: true })
-            next()
-        }).catch(err2 => {
-            throw new Error(err2)
-        })
+            }).then(res2 => {
+                console.dir(res2, { depth: null, colors: true })
+
+                db.indices.putMapping({
+                    index: indexName,
+                    type: "attribute",
+                    body: {
+                    properties: {
+                        id: { type: "long" },
+                        attribute_id: { type: "long" },
+
+                        options: {
+                        properties: {
+                            value:  { type: "string", "index" : "not_analyzed" }                          
+                        }
+                        }
+                    }
+                    }
+                }).then(res3 => {
+                    console.dir(res3, { depth: null, colors: true })
+                    next()
+                }).catch(err3 => {
+                    throw new Error(err3)
+                })                
+            }).catch(err2 => {
+                throw new Error(err2)
+            })
         }).catch(err1 => {
             console.error(err1)
             next(err1)
