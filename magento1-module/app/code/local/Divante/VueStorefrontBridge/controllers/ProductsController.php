@@ -9,6 +9,7 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
         $this->getResponse()->setHttpResponseCode(200);
         $this->getResponse()->setHeader('Content-Type', 'application/json');
 
+        $confChildBlacklist = array('entity_id', 'id', 'type_id', 'updated_at', 'created_at', 'stock_item', 'short_description', 'page_layout', 'news_from_date', 'news_to_date', 'meta_description', 'meta_keyword', 'meta_title', 'description', 'attribute_set_id', 'entity_type_id', 'has_options', 'required_options');
 
         $result = array();
         $productCollection = Mage::getModel('catalog/product')
@@ -30,20 +31,28 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
 
             if ($productDTO['type_id'] !== 'simple') {
                 $configurable= Mage::getModel('catalog/product_type_configurable')->setProduct($product);
-                $childProducts = $configurable->getUsedProductCollection()->addAttributeToSelect(array('price', 'sku', 'image', 'small_image', 'thumbnail', 'has_options', 'required_options', 'tax_class_id', 'url_key'))->addFilterByRequiredOptions();
+                $childProducts = $configurable->getUsedProductCollection()->addAttributeToSelect('*')->addFilterByRequiredOptions();
 
                 $productDTO['configurable_children'] = array();
                 foreach($childProducts as $child) {
                     $childDTO = $child->getData();
                     $childDTO['id'] = intval($childDTO['entity_id']);
-                    unset($childDTO['entity_id']);
 
                     $productAttributeOptions = $product->getTypeInstance(true)->getConfigurableAttributesAsArray($product);
                     $productDTO['configurable_options'] = [];
                     foreach ($productAttributeOptions as $productAttribute) {
+                        if(!$productDTO[$productAttribute['attribute_code'].'_options'])
+                            $productDTO[$productAttribute['attribute_code'].'_options'] = array();
+
                         $productDTO['configurable_options'][] = $productAttribute;
+                        $availableOptions = array();
+                        foreach( $productAttribute['values'] as $aOp)
+                                $availableOptions[] = $aOp['value_index'];
+
+                        $productDTO[$productAttribute['attribute_code'].'_options'] = $availableOptions;
                     }
 
+                    $childDTO = $this->_filterDTO($childDTO, $confChildBlacklist);
                     $productDTO['configurable_children'][] = $childDTO;
                 }
             }
@@ -57,7 +66,7 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                     "name" => $cat->getName());
             }
 
-
+            $productDTO = $this->_filterDTO($productDTO);
             $result[] = $productDTO;
         }
 

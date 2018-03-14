@@ -20,11 +20,8 @@ function _processCategory($category, $level = 0) {
     }
     // $catDTO['level'] = $level;
     $catDTO['children_count'] = count($catDTO['children_data']);
-    foreach($catDTO as $key => $val) {
-        if(strstr($key, 'is_')) {
-            $catDTO[$key] = boolval($val);
-        }
-    }
+    $catDTO = _filterDTO($catDTO);
+
     return $catDTO;
 }
 

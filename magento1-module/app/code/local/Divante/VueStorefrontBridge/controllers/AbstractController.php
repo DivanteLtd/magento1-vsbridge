@@ -1,5 +1,18 @@
 <?php
 define('MAX_PAGESIZE', 5000);
+function _filterDTO($dtoToFilter, array $blackList = null) {
+    foreach($dtoToFilter as $key => $val) {
+        if ($blackList && in_array($key, $blackList)) {
+            unset ($dtoToFilter[$key]);
+        } else {
+            if (strstr($key, 'is_') || strstr($key, 'has_')) {
+                $dtoToFilter[$key] = boolval($val);
+            }
+        }
+    }
+
+    return $dtoToFilter;
+}
 class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controller_Front_Action
 {
     public function init()
@@ -15,6 +28,10 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
             $paramsDTO['type_id'] = $typeId;
         }
         return $paramsDTO;
+    }
+
+    protected function _filterDTO($dtoToFilter, array $blackList = null) {
+        return _filterDTO($dtoToFilter, $blackList);
     }
 }
 ?>
