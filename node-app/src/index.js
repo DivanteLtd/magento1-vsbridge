@@ -19,6 +19,7 @@ const putMappings = require('./meta/elastic')
 
 let INDEX_VERSION = 1
 let INDEX_META_DATA
+let AUTH_TOKEN = '' 
 const INDEX_META_PATH = path.join(__dirname, '../var/indexMetadata.json')
 
 const { spawn } = require('child_process');
@@ -62,6 +63,24 @@ function showWelcomeMsg() {
     console.log('** CURRENT INDEX VERSION', INDEX_VERSION, INDEX_META_DATA.created)
 }
 
+function authUser(callback) {
+    return api.post(config.vsbridge['auth_endpoint']).type('json').send({
+        username: config.vsbridge.auth.username,
+        password: config.vsbridge.auth.password,
+    }).end((resp) => {
+        if(resp.body && resp.body.code == 200)
+        {
+            console.log('Got auth token ', resp.body.result)
+
+            if (callback) {
+                callback(resp.body);
+            }
+
+        } else {
+            console.error(resp.body.result);
+        }
+    });
+}
 
 function readIndexMeta() {
     let indexMeta = { version: 0, created: new Date(), updated: new Date() }
@@ -164,7 +183,14 @@ function importListOf(entityType, importer, config, api, page = 0, pageSize = 10
 
         let generalQueue = []
         console.log('*** Getting objects list for', query)
+        api.authWith(AUTH_TOKEN);
         api.get(config.vsbridge[entityType + '_endpoint']).query(query).end((resp) => {
+            
+            if (resp.body.code && resp.body.code !== 200) { // unauthroized request
+                console.log(resp.body.result);
+                process.exit(-1);    
+            }
+
             let queue = []
             let index = 0
             for(let obj of resp.body) { // process single record
@@ -269,9 +295,12 @@ process.on('uncaughtException', function (exception) {
 
 INDEX_META_DATA = readIndexMeta()
 INDEX_VERSION = INDEX_META_DATA.version
- 
+authUser((authResp) => {
   // RUN
-cli.parse(process.argv);
+  AUTH_TOKEN = authResp.result
+  cli.parse(process.argv);
+})
+
 
  
 // Using a single function to handle multiple signals

@@ -4,34 +4,38 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
 {
     public function indexAction()
     {
-        $params = $this->_processParams($this->getRequest());
-        $this->getResponse()->setHttpResponseCode(200);   
-        $this->getResponse()->setHeader('Content-Type', 'application/json');        
-        
-        $productAttrs = Mage::getResourceModel('catalog/product_attribute_collection');
+        if($this->_authorize($this->getRequest())) {
 
-        $attrList = array();
-        foreach ($productAttrs as $productAttr) { /** @var Mage_Catalog_Model_Resource_Eav_Attribute $productAttr */
-            $attribute = Mage::getSingleton('eav/config')
-            ->getAttribute(Mage_Catalog_Model_Product::ENTITY, $productAttr->getAttributeCode());
+            $params = $this->_processParams($this->getRequest());
+            $this->getResponse()->setHttpResponseCode(200);
+            $this->getResponse()->setHeader('Content-Type', 'application/json');
 
-            $options = array();
-            if ($attribute->usesSource()) {
-                $options = $attribute->getSource()->getAllOptions(false);
+            $productAttrs = Mage::getResourceModel('catalog/product_attribute_collection');
+
+            $attrList = array();
+            foreach ($productAttrs as $productAttr) {
+                /** @var Mage_Catalog_Model_Resource_Eav_Attribute $productAttr */
+                $attribute = Mage::getSingleton('eav/config')
+                    ->getAttribute(Mage_Catalog_Model_Product::ENTITY, $productAttr->getAttributeCode());
+
+                $options = array();
+                if ($attribute->usesSource()) {
+                    $options = $attribute->getSource()->getAllOptions(false);
+                }
+
+                $productAttrDTO = $productAttr->getData();
+
+                if (in_array($productAttrDTO['source_model'], array('core/design_source_design'))) continue; // exception - this attribute has string typed values; this is not acceptable by VS
+
+                $productAttrDTO['id'] = intval($productAttr->attribute_id);
+                $productAttrDTO['options'] = $options;
+
+                $productAttrDTO = $this->_filterDTO($productAttrDTO);
+
+                $attrList[] = $productAttrDTO;
             }
-
-            $productAttrDTO = $productAttr->getData();
-
-            if(in_array($productAttrDTO['source_model'], array('core/design_source_design'))) continue; // exception - this attribute has string typed values; this is not acceptable by VS
-
-            $productAttrDTO['id'] = intval($productAttr->attribute_id);
-            $productAttrDTO['options'] = $options;
-
-            $productAttrDTO = $this->_filterDTO($productAttrDTO);
-
-            $attrList[] = $productAttrDTO;
+            $this->getResponse()->setBody(json_encode($attrList, JSON_NUMERIC_CHECK));
         }
-        $this->getResponse()->setBody(json_encode($attrList, JSON_NUMERIC_CHECK ));
     }
 }
 ?>

@@ -5,72 +5,75 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
 {
     public function indexAction()
     {
-        $params = $this->_processParams($this->getRequest());
-        $this->getResponse()->setHttpResponseCode(200);
-        $this->getResponse()->setHeader('Content-Type', 'application/json');
+        if($this->_authorize($this->getRequest())) {
 
-        $confChildBlacklist = array('entity_id', 'id', 'type_id', 'updated_at', 'created_at', 'stock_item', 'short_description', 'page_layout', 'news_from_date', 'news_to_date', 'meta_description', 'meta_keyword', 'meta_title', 'description', 'attribute_set_id', 'entity_type_id', 'has_options', 'required_options');
+            $params = $this->_processParams($this->getRequest());
+            $this->getResponse()->setHttpResponseCode(200);
+            $this->getResponse()->setHeader('Content-Type', 'application/json');
 
-        $result = array();
-        $productCollection = Mage::getModel('catalog/product')
-            ->getCollection()
-            ->addAttributeToSort('updated_at', 'DESC')
-            ->addAttributeToSelect('*')
-            ->setPage($params['page'], $params['pageSize']);
+            $confChildBlacklist = array('entity_id', 'id', 'type_id', 'updated_at', 'created_at', 'stock_item', 'short_description', 'page_layout', 'news_from_date', 'news_to_date', 'meta_description', 'meta_keyword', 'meta_title', 'description', 'attribute_set_id', 'entity_type_id', 'has_options', 'required_options');
 
-        if ($params['type_id']) {
-            $productCollection->addFieldToFilter('type_id', $params['type_id']);
-        }
+            $result = array();
+            $productCollection = Mage::getModel('catalog/product')
+                ->getCollection()
+                ->addAttributeToSort('updated_at', 'DESC')
+                ->addAttributeToSelect('*')
+                ->setPage($params['page'], $params['pageSize']);
 
-        $productCollection->load();
+            if ($params['type_id']) {
+                $productCollection->addFieldToFilter('type_id', $params['type_id']);
+            }
 
-        foreach ($productCollection as $product){
-            $productDTO = $product->getData();
-            $productDTO['id'] = intval($productDTO['entity_id']);
-            unset($productDTO['entity_id']);
+            $productCollection->load();
 
-            if ($productDTO['type_id'] !== 'simple') {
-                $configurable= Mage::getModel('catalog/product_type_configurable')->setProduct($product);
-                $childProducts = $configurable->getUsedProductCollection()->addAttributeToSelect('*')->addFilterByRequiredOptions();
+            foreach ($productCollection as $product) {
+                $productDTO = $product->getData();
+                $productDTO['id'] = intval($productDTO['entity_id']);
+                unset($productDTO['entity_id']);
 
-                $productDTO['configurable_children'] = array();
-                foreach($childProducts as $child) {
-                    $childDTO = $child->getData();
-                    $childDTO['id'] = intval($childDTO['entity_id']);
+                if ($productDTO['type_id'] !== 'simple') {
+                    $configurable = Mage::getModel('catalog/product_type_configurable')->setProduct($product);
+                    $childProducts = $configurable->getUsedProductCollection()->addAttributeToSelect('*')->addFilterByRequiredOptions();
 
-                    $productAttributeOptions = $product->getTypeInstance(true)->getConfigurableAttributesAsArray($product);
-                    $productDTO['configurable_options'] = [];
-                    foreach ($productAttributeOptions as $productAttribute) {
-                        if(!$productDTO[$productAttribute['attribute_code'].'_options'])
-                            $productDTO[$productAttribute['attribute_code'].'_options'] = array();
+                    $productDTO['configurable_children'] = array();
+                    foreach ($childProducts as $child) {
+                        $childDTO = $child->getData();
+                        $childDTO['id'] = intval($childDTO['entity_id']);
 
-                        $productDTO['configurable_options'][] = $productAttribute;
-                        $availableOptions = array();
-                        foreach( $productAttribute['values'] as $aOp)
+                        $productAttributeOptions = $product->getTypeInstance(true)->getConfigurableAttributesAsArray($product);
+                        $productDTO['configurable_options'] = [];
+                        foreach ($productAttributeOptions as $productAttribute) {
+                            if (!$productDTO[$productAttribute['attribute_code'] . '_options'])
+                                $productDTO[$productAttribute['attribute_code'] . '_options'] = array();
+
+                            $productDTO['configurable_options'][] = $productAttribute;
+                            $availableOptions = array();
+                            foreach ($productAttribute['values'] as $aOp)
                                 $availableOptions[] = $aOp['value_index'];
 
-                        $productDTO[$productAttribute['attribute_code'].'_options'] = $availableOptions;
+                            $productDTO[$productAttribute['attribute_code'] . '_options'] = $availableOptions;
+                        }
+
+                        $childDTO = $this->_filterDTO($childDTO, $confChildBlacklist);
+                        $productDTO['configurable_children'][] = $childDTO;
                     }
-
-                    $childDTO = $this->_filterDTO($childDTO, $confChildBlacklist);
-                    $productDTO['configurable_children'][] = $childDTO;
                 }
+
+                $cats = $product->getCategoryIds();
+                $productDTO['category'] = array();
+                foreach ($cats as $category_id) {
+                    $cat = Mage::getModel('catalog/category')->load($category_id);
+                    $productDTO['category'][] = array(
+                        "category_id" => $cat->getId(),
+                        "name" => $cat->getName());
+                }
+
+                $productDTO = $this->_filterDTO($productDTO);
+                $result[] = $productDTO;
             }
 
-            $cats = $product->getCategoryIds();
-            $productDTO['category'] = array();
-            foreach ($cats as $category_id) {
-                $cat = Mage::getModel('catalog/category')->load($category_id) ;
-                $productDTO['category'][] = array(
-                    "category_id" => $cat->getId(),
-                    "name" => $cat->getName());
-            }
-
-            $productDTO = $this->_filterDTO($productDTO);
-            $result[] = $productDTO;
+            $this->getResponse()->setBody(json_encode($result, JSON_NUMERIC_CHECK));
         }
-
-        $this->getResponse()->setBody(json_encode($result, JSON_NUMERIC_CHECK ));
     }
 }
 ?>

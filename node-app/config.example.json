@@ -6,6 +6,12 @@
     "vsbridge": {
         "url": "http://dockerized-magento.local:80/",
         "apKey": "test",
+        "auth": {
+            "username": "admin",
+            "password": "password123",
+            "secret": "Geiw0qua"
+        },
+        "auth_endpoint": "http://dockerized-magento.local/vsbridge/auth/admin",
         "product_endpoint": "http://dockerized-magento.local/vsbridge/products/index",
         "category_endpoint": "http://dockerized-magento.local/vsbridge/categories/index",
         "taxrule_endpoint": "http://dockerized-magento.local/vsbridge/taxrules/index",

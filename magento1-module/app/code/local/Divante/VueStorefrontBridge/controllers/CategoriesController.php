@@ -29,16 +29,19 @@ class Divante_VueStorefrontBridge_CategoriesController extends Divante_VueStoref
 {
     public function indexAction()
     {
-        $params = $this->_processParams($this->getRequest());
-        $this->getResponse()->setHttpResponseCode(200);
-        $this->getResponse()->setHeader('Content-Type', 'application/json');        
-        $categories = Mage::getModel('catalog/category')->getCollection()->addAttributeToSelect('*')->setPage($params['page'], $params['pageSize'])->load(); //$helper->getStoreCategories();
+        if ($this->_authorize($this->getRequest())) {
 
-        $catList = array();
-        foreach ($categories as $category) {
-            $catList[] = _processCategory($category);
+            $params = $this->_processParams($this->getRequest());
+            $this->getResponse()->setHttpResponseCode(200);
+            $this->getResponse()->setHeader('Content-Type', 'application/json');
+            $categories = Mage::getModel('catalog/category')->getCollection()->addAttributeToSelect('*')->setPage($params['page'], $params['pageSize'])->load(); //$helper->getStoreCategories();
+
+            $catList = array();
+            foreach ($categories as $category) {
+                $catList[] = _processCategory($category);
+            }
+            $this->getResponse()->setBody(json_encode($catList, JSON_NUMERIC_CHECK));
         }
-        $this->getResponse()->setBody(json_encode($catList, JSON_NUMERIC_CHECK ));
     }
 }
 ?>
