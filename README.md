@@ -1,7 +1,7 @@
 # Vue Storefront support for Magento 1.9
 This projects enables You to use Magento 1.9 as a backend platform for [Vue Storefront - first Progressive Web App for e-Commerce](https://github.com/DivanteLtd/vue-storefront). 
 
-<a href="http://demo-magento1.vuestorefront.io">![doc/media/magento1-hp.png](Home page of Magento1 demo)</a>
+![doc/media/magento1-hp.png](Home page of Magento1 demo)
 
 Vue Storefront is a standalone PWA storefront for eCommerce. It can be conencted with any eCommerce backend (eg. Magento, Pimcore, Prestashop or Shopware) through the API.
 
