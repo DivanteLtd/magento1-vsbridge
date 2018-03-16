@@ -5,7 +5,6 @@ class Divante_VueStorefrontBridge_AuthController extends Divante_VueStorefrontBr
 {
     public function adminAction()
     {
-        $this->getResponse()->setHeader('Content-Type', 'application/json');
         if($this->getRequest()->getMethod() !== 'POST'){
             return $this->_result(500, 'Only POST method allowed');
         } else {

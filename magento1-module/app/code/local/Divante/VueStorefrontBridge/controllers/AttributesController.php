@@ -7,9 +7,6 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
         if($this->_authorize($this->getRequest())) {
 
             $params = $this->_processParams($this->getRequest());
-            $this->getResponse()->setHttpResponseCode(200);
-            $this->getResponse()->setHeader('Content-Type', 'application/json');
-
             $productAttrs = Mage::getResourceModel('catalog/product_attribute_collection');
 
             $attrList = array();
@@ -34,7 +31,7 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
 
                 $attrList[] = $productAttrDTO;
             }
-            $this->getResponse()->setBody(json_encode($attrList, JSON_NUMERIC_CHECK));
+            $this->_result(200, $attrList);
         }
     }
 }

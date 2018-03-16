@@ -184,16 +184,16 @@ function importListOf(entityType, importer, config, api, page = 0, pageSize = 10
         let generalQueue = []
         console.log('*** Getting objects list for', query)
         api.authWith(AUTH_TOKEN);
-        api.get(config.vsbridge[entityType + '_endpoint']).query(query).end((resp) => {
+        api.get(config.vsbridge[entityType + '_endpoint']).type('json').query(query).end((resp) => {
             
-            if (resp.body.code && resp.body.code !== 200) { // unauthroized request
+            if (resp.body && resp.body.code !== 200) { // unauthroized request
                 console.log(resp.body.result);
                 process.exit(-1);    
             }
 
             let queue = []
             let index = 0
-            for(let obj of resp.body) { // process single record
+            for(let obj of resp.body.result) { // process single record
                 let promise = importer.single(obj).then((singleResults) => {
                     storeResults(singleResults, entityType)
                     console.log('* Record done for ', obj.id, index, pageSize)
@@ -205,9 +205,9 @@ function importListOf(entityType, importer, config, api, page = 0, pageSize = 10
                     queue.push(promise)
             }
             let resultParser = (results) => {
-                console.log('** Page done ', page, resp.body.length)
+                console.log('** Page done ', page, resp.body.result.length)
                 
-                if(resp.body.length === pageSize)
+                if(resp.body.result.length === pageSize)
                 {
                     if(recursive) {
                         console.log('*** Switching page!')

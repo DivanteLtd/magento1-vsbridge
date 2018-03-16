@@ -44,7 +44,7 @@ class Divante_VueStorefrontBridge_TaxrulesController extends Divante_VueStorefro
                     $taxRules[] = $taxRuleDTO;
                 }
             }
-            $this->getResponse()->setBody(json_encode($taxRules, JSON_NUMERIC_CHECK));
+            $this->_result(200, $taxRules);
         }
     }
 }

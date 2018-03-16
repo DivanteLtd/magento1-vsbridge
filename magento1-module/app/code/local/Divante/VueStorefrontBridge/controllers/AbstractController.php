@@ -60,7 +60,7 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
         $this->getResponse()->setBody(json_encode(array(
             'code' => $code,
             'result' => $result
-        )))->setHttpResponseCode($code);
+        ), JSON_NUMERIC_CHECK))->setHttpResponseCode($code)->setHeader('Content-Type', 'application/json');
     }
 }
 ?>

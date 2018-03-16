@@ -8,9 +8,6 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
         if($this->_authorize($this->getRequest())) {
 
             $params = $this->_processParams($this->getRequest());
-            $this->getResponse()->setHttpResponseCode(200);
-            $this->getResponse()->setHeader('Content-Type', 'application/json');
-
             $confChildBlacklist = array('entity_id', 'id', 'type_id', 'updated_at', 'created_at', 'stock_item', 'short_description', 'page_layout', 'news_from_date', 'news_to_date', 'meta_description', 'meta_keyword', 'meta_title', 'description', 'attribute_set_id', 'entity_type_id', 'has_options', 'required_options');
 
             $result = array();
@@ -72,7 +69,7 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                 $result[] = $productDTO;
             }
 
-            $this->getResponse()->setBody(json_encode($result, JSON_NUMERIC_CHECK));
+            $this->_result(200, $result);
         }
     }
 }
