@@ -110,6 +110,6 @@ Some ideas for contributions:
 - media gallery sync,
 - shopping cart / order sync (please [contact us for details](contributors@vuestorefront.io)).
 
-# Licence 
+# License 
 `magento1-vsbridge` source code is completely free and released under the [MIT License](https://github.com/DivanteLtd/vue-storefront/blob/master/LICENSE).
 
