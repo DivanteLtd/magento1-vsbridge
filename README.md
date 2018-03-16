@@ -42,7 +42,7 @@ https://github.com/DivanteLtd/magento1-vsbridge/blob/3f92a6d842e6afb4c7e34e78922
 Then please clean the Magento cache.
 To make sure that the module works just fine You can try to authorize the user using Postman:
 
-!(Postman test)[doc/media/postman.png]
+![Postman test](doc/media/postman.png)
 
 ## Node app setup
 
