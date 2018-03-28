@@ -64,6 +64,9 @@ In the config file please setup the following variables:
 - [`elasticsearch.indexName`](https://github.com/DivanteLtd/magento1-vsbridge/blob/5d4b9285c2dd2a20900e6075f50ebc2d7802499e/node-app/config.example.json#L4) should be set to Your ElasticSearch index which then will be connected to the Vue Storefront. It can be fresh / non-existient index as well (will be created then). For example You may have: `vue_storefront_mangento1`
 
 ## Vue Storefront setup
+
+**Please note:** current version of magento1-vsbridge requires the latest version of VS, from ['develop' branch installed](https://github.com/DivanteLtd/vue-storefront/tree/develop). Please make sure youre using the most recent code.
+
 By default Vue Storefront uses ES index named `vue_storefront_catalog`. Please apply the changes accordingly to:
 - `vue-storefront` [config file](https://github.com/DivanteLtd/vue-storefront/tree/master/config) `local.json` to point to right index name,
 - `vue-storefront-api` [config file](https://github.com/DivanteLtd/vue-storefront-api/tree/master/config) `local.json` to point to right index name.
@@ -110,6 +113,6 @@ Some ideas for contributions:
 - media gallery sync,
 - shopping cart / order sync (please [contact us for details](contributors@vuestorefront.io)).
 
-# Licence 
+# License 
 `magento1-vsbridge` source code is completely free and released under the [MIT License](https://github.com/DivanteLtd/vue-storefront/blob/master/LICENSE).
 
