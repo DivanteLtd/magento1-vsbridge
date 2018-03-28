@@ -14,7 +14,7 @@ const shell = require('shelljs')
 const fs = require('fs')
 const jsonFile = require('jsonfile')
 
-const putMappings = require('./meta/elastic')
+const putMappings = require('./meta/elastic').putMappings
 
 
 let INDEX_VERSION = 1
@@ -199,7 +199,7 @@ function importListOf(entityType, importer, config, api, page = 0, pageSize = 10
                     console.log('* Record done for ', obj.id, index, pageSize)
                     index++
                 })
-                if(cli.params.runSerial)
+                if(cli.options.runSerial)
                     queue.push(() => promise)
                 else
                     queue.push(promise)
@@ -215,7 +215,7 @@ function importListOf(entityType, importer, config, api, page = 0, pageSize = 10
                     }
                 }
             }
-            if(cli.params.runSerial)
+            if(cli.options.runSerial)
                 promise.serial(queue).then(resultParser).then((res) => resolve(res)).catch((reason) => { console.error(reason); reject() })
             else 
                 Promise.all(queue).then(resultParser).then((res) => resolve(res)).catch((reason) => { console.error(reason); reject() })

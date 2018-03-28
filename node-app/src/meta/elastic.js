@@ -1,10 +1,106 @@
+function putAlias(db, originalName, aliasName, next) {
+    let step2 = () => { 
+        db.indices.putAlias({ index: originalName, name: aliasName }).then(result=>{
+            console.log('Index alias created', result)
+        }).then(next).catch(err => {
+            console.log(err.message)
+            next()
+        })
+    }
+    return db.indices.deleteAlias({
+        index: aliasName,
+        name:  originalName
+    }).then((result) => {
+        console.log('Public index alias deleted', result)
+        step2()
+    }).catch((err) => {
+        console.log('Public index alias does not exists', err.message)
+        step2()
+    })      
+}
+
+function deleteIndex(db, indexName, next) {
+    db.indices.delete({
+        "index": indexName
+      }).then((res) => {
+        console.dir(res, { depth: null, colors: true })
+        next()
+      }).catch(err => {
+        console.error(err)
+        next(err)
+      })    
+}
+function reIndex(db, fromIndexName, toIndexName, next) {
+    db.reindex({
+      waitForCompletion: true,
+      body: {
+        "source": {
+          "index": fromIndexName
+        },
+        "dest": {
+          "index": toIndexName
+        }
+      }
+    }).then(res => {
+      console.dir(res, { depth: null, colors: true })
+      next()
+    }).catch(err => {
+      console.error(err)
+      next(err)
+    })    
+}
+
+function createIndex(db, indexName, next) {
+
+    const step2 = () => {
+
+        db.indices.delete({
+            "index": indexName
+            }).then(res1 => {
+                console.dir(res1, { depth: null, colors: true })
+                db.indices.create(
+                    {
+                        "index": indexName
+                    }).then(res2 => {
+                        console.dir(res2, { depth: null, colors: true })
+                        next()
+                    }).catch(err => {
+                        console.error(err)
+                        next(err)
+                    })
+                }).catch(() => {
+                    db.indices.create(
+                        {
+                        "index": indexName
+                        }).then(res2 => {
+                            console.dir(res2, { depth: null, colors: true })
+                            next()
+                        }).catch(err => {
+                            console.error(err)
+                            next(err)
+                        })
+                })        
+    }
+
+    return db.indices.deleteAlias({
+        index: '*',
+        name:  indexName
+    }).then((result) => {
+        console.log('Public index alias deleted', result)
+        step2()
+    }).catch((err) => {
+        console.log('Public index alias does not exists', err.message)
+        step2()
+    })      
+}
+
 function putMappings(db, indexName, next) {
     db.indices.putMapping({
         index: indexName,
         type: "product",
         body: {
             properties: {
-                sku: { type: "string", "index" : "not_analyzed" },
+                sku: { type: "keyword" },
                 size: { type: "integer" },
                 size_options: { type: "integer" },
                 price: { type: "float" },
@@ -12,7 +108,7 @@ function putMappings(db, indexName, next) {
                 special_price: { type: "float" },
                 color: { type: "integer" },
                 color_options: { type: "integer" },
-                pattern: { type: "string" },
+                pattern: { type: "text" },
                 id: { type: "long" },
                 status: { type: "integer" },
                 weight: { type: "integer" },
@@ -43,7 +139,7 @@ function putMappings(db, indexName, next) {
                     properties: {
                         has_options: { type: "boolean" },
                         price: { type: "float" },
-                        sku: { type: "string", "index" : "not_analyzed" }
+                        sku: { type: "keyword" }
                     }
                 },
                 configurable_options: {
@@ -59,7 +155,7 @@ function putMappings(db, indexName, next) {
                                 label: { type: "text"},
                                 frontend_label: { type: "text"},                           
                                 store_label: { type: "text"},
-                                value_index:  { type: "string", "index" : "not_analyzed" }                          
+                                value_index:  { type: "keyword" }                          
                             }
                         }
                     }
@@ -73,7 +169,7 @@ function putMappings(db, indexName, next) {
         }
         }).then(res1 => {
             console.dir(res1, { depth: null, colors: true })
-
+  
             db.indices.putMapping({
                 index: indexName,
                 type: "taxrule",
@@ -89,7 +185,7 @@ function putMappings(db, indexName, next) {
                 }
             }).then(res2 => {
                 console.dir(res2, { depth: null, colors: true })
-
+  
                 db.indices.putMapping({
                     index: indexName,
                     type: "attribute",
@@ -97,10 +193,10 @@ function putMappings(db, indexName, next) {
                     properties: {
                         id: { type: "long" },
                         attribute_id: { type: "long" },
-
+  
                         options: {
                         properties: {
-                            value:  { type: "string", "index" : "not_analyzed" }                          
+                            value:  { type: "text", "index" : "not_analyzed" }                          
                         }
                         }
                     }
@@ -118,6 +214,12 @@ function putMappings(db, indexName, next) {
             console.error(err1)
             next(err1)
         })    
-}
+  }
 
-module.exports = putMappings
+  module.exports = {
+    putMappings,
+    putAlias,
+    createIndex,
+    deleteIndex,
+    reIndex
+  }

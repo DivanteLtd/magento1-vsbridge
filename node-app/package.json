@@ -1,8 +1,8 @@
 {
-  "name": "pimcore2vuestorefront",
+  "name": "magento1-vsbridge",
   "version": "1.0.0",
   "description": "Magento 1 To vue-storefront bridge",
-  "main": "babel-node setup.js",
+  "main": "babel-node index.js",
   "dependencies": {
     "babel-cli": "^6.26.0",
     "command-exists": "^1.2.2",
