@@ -3753,8 +3753,8 @@ The `cart_id` is a guest or authorized users quote id (You can mix guest cart wi
     "result":"OK"
 }
 ```
-In case of the JSON validation error, the validation errors will be returned inside the `result` object.
 
+In case of the JSON validation error, the validation errors will be returned inside the `result` object.
 
 ## Catalog module
 
