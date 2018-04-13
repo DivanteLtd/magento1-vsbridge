@@ -2421,7 +2421,7 @@ The `result` is a cart-id that should be used for all subsequent cart related op
 - `500` in case of error
 
 
-### POST [/vsbridge/cart/pull](https://github.com/DivanteLtd/vue-storefront-api/blob/7d98771994b1009ad17d69c458f9e93686cfb145/src/vsbridge/cart.js#L131)
+### GET [/vsbridge/cart/pull](https://github.com/DivanteLtd/vue-storefront-api/blob/7d98771994b1009ad17d69c458f9e93686cfb145/src/vsbridge/cart.js#L131)
 
 Method used to fetch the current server side shopping cart content, used mostly for synchronization purposes when `config.cart.synchronize=true`
 
