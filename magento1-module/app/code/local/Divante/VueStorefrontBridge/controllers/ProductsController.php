@@ -5,7 +5,7 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
 {
     public function indexAction()
     {
-        if($this->_authorize($this->getRequest())) {
+        if($this->_authorizeAdminUser($this->getRequest())) {
 
             $params = $this->_processParams($this->getRequest());
             $confChildBlacklist = array('entity_id', 'id', 'type_id', 'updated_at', 'created_at', 'stock_item', 'short_description', 'page_layout', 'news_from_date', 'news_to_date', 'meta_description', 'meta_keyword', 'meta_title', 'description', 'attribute_set_id', 'entity_type_id', 'has_options', 'required_options');

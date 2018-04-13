@@ -15,6 +15,7 @@ function _filterDTO($dtoToFilter, array $blackList = null) {
 
     return $dtoToFilter;
 }
+
 class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controller_Front_Action
 {
     public function init()
@@ -22,7 +23,14 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
         $this->getResponse()->setHeader('Content-Type', 'application/json');        
     } 
 
-    protected function _authorize($request) {
+    protected function _currentStore(){
+        return Mage::app()->getStore(); // TODO: refactor to use GET parameters
+    }
+    protected function _getJsonBody() {
+        return @json_decode($this->getRequest()->getRawBody());
+    }
+
+    protected function _authorizeAdminUser($request) {
         $apikey = $request->getParam('apikey');
         $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
 
@@ -40,6 +48,49 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
         }
 
         return false;
+    }
+
+    /**
+     * Authorize the request against customers (not admin) db and return current customer
+     * @param $request
+     * @return object
+     */
+    protected function _currentCustomer($request) {
+        $token = $request->getParam('token');
+        $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
+
+        try {
+            $tokenData = JWT::decode($token, $secretKey, 'HS256');
+            if($tokenData->id > 0){
+                return Mage::getModel('customer/customer')->load($tokenData->id);
+            }  else {
+                return null;
+            }
+        } catch (Exception $err) {
+            return null;
+        }
+
+        return null;
+    }
+
+    protected function _currentQuote($request) {
+        $cartId = $request->getParam('cartId');
+
+        if(intval(($cartId)) > 0)
+            return Mage::getModel('sales/quote')->load($cartId);
+        else {
+            if($cartId) {
+                $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
+                $tokenData = JWT::decode($cartId, $secretKey, 'HS256');
+                return Mage::getModel('sales/quote')->load($tokenData->cartId);
+            } else
+                return null;
+        }
+    }
+
+    protected function _checkQuotePerms($quoteObj, $customer) {
+        $quoteCustomer = $quoteObj->getCustomer();
+        return ($customer && $quoteCustomer && $quoteCustomer->getId() === $customer->getId() || (!$customer && !$quoteCustomer));
     }
 
     protected function _processParams($request) {

@@ -4,7 +4,7 @@ class Divante_VueStorefrontBridge_TaxrulesController extends Divante_VueStorefro
 {
     public function indexAction()
     {
-        if($this->_authorize($this->getRequest())) {
+        if($this->_authorizeAdminUser($this->getRequest())) {
 
             $this->getResponse()->setHttpResponseCode(300);
             $this->getResponse()->setHeader('Content-Type', 'application/json');

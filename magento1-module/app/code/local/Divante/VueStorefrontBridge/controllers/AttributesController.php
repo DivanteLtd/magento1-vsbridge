@@ -4,7 +4,7 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
 {
     public function indexAction()
     {
-        if($this->_authorize($this->getRequest())) {
+        if($this->_authorizeAdminUser($this->getRequest())) {
 
             $params = $this->_processParams($this->getRequest());
             $productAttrs = Mage::getResourceModel('catalog/product_attribute_collection');

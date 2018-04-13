@@ -9,7 +9,7 @@ class Divante_VueStorefrontBridge_AuthController extends Divante_VueStorefrontBr
             return $this->_result(500, 'Only POST method allowed');
         } else {
 
-            $request = @json_decode($this->getRequest()->getRawBody());
+            $request = $this->_getJsonBody();
 
             if(!$request) {
                 return $this->_result(500, 'No JSON object found in the request body');
