@@ -21,8 +21,28 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
     public function init()
     {
         $this->getResponse()->setHeader('Content-Type', 'application/json');        
+        $this->getResponse()->setHeader('Access-Control-Allow-Origin', '*');
+        $this->getResponse()->setHeader('Access-Control-Expose-Headers', 'Link');
     } 
 
+    public function preDispatch() {
+        if($this->getRequest()->getMethod() === 'OPTIONS'){
+           $this->getResponse()->setBody(json_encode(true))->setHeader('Access-Control-Allow-Origin', '*')->setHeader('Access-Control-Allow-Headers', 'Content-Type')
+           ->setHeader('Access-Control-Expose-Headers', 'Link')->sendResponse();
+           die();
+        }
+    }
+
+    public function optionsAction() {
+        return $this->_result(204, true);
+    }
+
+    protected function _checkHttpMethod($methods) {
+        if(!is_array($methods))
+            $methods = array($methods);
+        
+        return in_array($this->getRequest()->getMethod(), $methods);
+    }
     protected function _currentStore(){
         return Mage::app()->getStore(); // TODO: refactor to use GET parameters
     }
@@ -90,7 +110,7 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
 
     protected function _checkQuotePerms($quoteObj, $customer) {
         $quoteCustomer = $quoteObj->getCustomer();
-        return ($customer && $quoteCustomer && $quoteCustomer->getId() === $customer->getId() || (!$customer && !$quoteCustomer));
+        return (($customer && $quoteCustomer && $quoteCustomer->getId() === $customer->getId()) || (!$quoteCustomer || !$quoteCustomer->getId()));
     }
 
     protected function _processParams($request) {
@@ -111,7 +131,9 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
         $this->getResponse()->setBody(json_encode(array(
             'code' => $code,
             'result' => $result
-        ), JSON_NUMERIC_CHECK))->setHttpResponseCode($code)->setHeader('Content-Type', 'application/json');
+        ), JSON_NUMERIC_CHECK))->setHttpResponseCode($code)->setHeader('Content-Type', 'application/json')
+            ->setHeader('Access-Control-Allow-Origin', '*')
+            ->setHeader('Access-Control-Expose-Headers', 'Link');
     }
 }
 ?>

@@ -32,9 +32,13 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
         }
     }
 
+    /**
+     * Pull the server cart for synchronization
+     * https://github.com/DivanteLtd/magento1-vsbridge/blob/master/doc/VueStorefrontBridge%20API%20specs.md#get-vsbridgecartpull
+     */
     public function pullAction()
     {
-        if ($this->getRequest()->getMethod() !== 'GET') {
+        if (!$this->_checkHttpMethod('GET')) {
             return $this->_result(500, 'Only GET method allowed');
         } else {
             $customer = $this->_currentCustomer($this->getRequest());
@@ -76,7 +80,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
      */
     public function applyCouponAction()
     {
-        if ($this->getRequest()->getMethod() !== 'POST') {
+        if (!$this->_checkHttpMethod('POST')) {
             return $this->_result(500, 'Only POST method allowed');
         } else {
             $store = $this->_currentStore();
@@ -118,7 +122,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
      */
     public function deleteCouponAction()
     {
-        if ($this->getRequest()->getMethod() !== 'POST') {
+        if (!$this->_checkHttpMethod('POST')) {
             return $this->_result(500, 'Only POST method allowed');
         } else {
             $store = $this->_currentStore();
@@ -154,7 +158,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
      */
     public function couponAction()
     {
-        if ($this->getRequest()->getMethod() !== 'GET') {
+        if (!$this->_checkHttpMethod('GET')) {
             return $this->_result(500, 'Only GET method allowed');
         } else {
             $store = $this->_currentStore();
@@ -187,7 +191,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
      */
     public function totalsAction()
     {
-        if (!in_array($this->getRequest()->getMethod(), array('GET', 'POST'))) {
+        if (!$this->_checkHttpMethod(array('GET', 'POST'))) {
             return $this->_result(500, 'Only GET or POST methods allowed');
         } else {
             $customer = $this->_currentCustomer($this->getRequest());
@@ -315,7 +319,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
      */
     public function paymentMethodsAction()
     {
-        if ($this->getRequest()->getMethod() !== 'GET') {
+        if (!$this->_checkHttpMethod('GET')) {
             return $this->_result(500, 'Only GET method allowed');
         } else {
             $customer = $this->_currentCustomer($this->getRequest());
@@ -388,7 +392,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
      */
     public function shippingMethodsAction()
     {
-        if ($this->getRequest()->getMethod() !== 'POST') {
+        if (!$this->_checkHttpMethod('POST')) {
             return $this->_result(500, 'Only POST method allowed');
         } else {
             $customer = $this->_currentCustomer($this->getRequest());
@@ -446,7 +450,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
 
     public function updateAction()
     {
-        if ($this->getRequest()->getMethod() !== 'POST') {
+        if (!$this->_checkHttpMethod('POST')) {
             return $this->_result(500, 'Only POST method allowed');
         } else {
 
@@ -495,7 +499,17 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
                                     if (!$product) {
                                         return $this->_result(500, 'No product found with given SKU = ' . $cartItem->sku);
                                     } else { // stock quantity check required or not?
-                                        $item = $quoteObj->addProduct($product, max(1, $cartItem->qty));
+                                        $alreadyInCart = false;
+                                        foreach($quoteObj->getAllVisibleItems() as $item) {
+                                            if ($item->getData('prodduct_id') == $product_id) {
+                                                $alreadyInCart = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if(!$alreadyInCart)
+                                            $item = $quoteObj->addProduct($product, max(1, $cartItem->qty));
+                                        
                                         $quoteObj->collectTotals()->save();
 
                                         $itemDto = $item->getData();
@@ -527,7 +541,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
     public function deleteAction()
     {
 
-        if ($this->getRequest()->getMethod() !== 'POST') {
+        if (!$this->_checkHttpMethod('POST')) {
             return $this->_result(500, 'Only POST method allowed');
         } else {
 

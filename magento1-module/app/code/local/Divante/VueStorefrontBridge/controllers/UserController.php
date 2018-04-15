@@ -3,9 +3,13 @@ require_once('AbstractController.php');
 require_once(__DIR__.'/../helpers/JWT.php');
 class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBridge_AbstractController
 {
+    /**
+     * Login the customer and return API access token
+     * https://github.com/DivanteLtd/magento1-vsbridge/blob/master/doc/VueStorefrontBridge%20API%20specs.md#post-vsbridgeuserlogin
+     */
     public function loginAction()
     {
-        if ($this->getRequest()->getMethod() !== 'POST') {
+        if (!$this->_checkHttpMethod('POST')) {
             return $this->_result(500, 'Only POST method allowed');
         } else {
 
@@ -38,9 +42,13 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
         }
     }
 
+    /**
+     * Register the customer
+     * https://github.com/DivanteLtd/magento1-vsbridge/blob/master/doc/VueStorefrontBridge%20API%20specs.md#post-vsbridgeusercreate
+     */
     public function createAction()
     {
-        if ($this->getRequest()->getMethod() !== 'POST') {
+        if (!$this->_checkHttpMethod('POST')) {
             return $this->_result(500, 'Only POST method allowed');
         } else {
 
@@ -77,6 +85,38 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 }
             }
 
+        }
+    }
+
+
+    public function meAction(){
+        $customer = $this->_currentCustomer($this->getRequest());
+        if(!customer) {
+            return $this->_result(500, 'No customer found with the specified token');
+        } else { 
+            if ($this->_checkHttpMethod(array('POST'))) { // modify user data
+            }
+            $customerDTO = $customer->getData();
+            $allAddress = $customer->getAddresses();
+            $defaultBilling  = $customer->getDefaultBilling();
+            $defaultShipping = $customer->getDefaultShipping();
+                            
+            foreach ($allAddress as $address) {
+                $addressDTO = $address->getData();
+                if($defaultBilling == $address->getId()) {
+                    // its customer default billing address
+                    $addressDTO['default_billing'] = true;
+                } else if($defaultShipping == $address->getId()) {
+                    // its customer default shipping address
+                    $addressDTO['default_shipping'] = true;
+                }
+                $customerDTO['id'] = $customerDTO['entity_id'];
+                $customerDTO['addresses'][] = $addressDTO;
+            }
+            
+            $filteredCustomerData = $this->_filterDTO($customerDTO, array('password', 'password_hash', 'password_confirmation', 'confirmation', 'entity_type_id'));
+            return $this->_result(200, $filteredCustomerData);
+        
         }
     }
 }

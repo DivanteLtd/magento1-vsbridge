@@ -9,9 +9,9 @@ class Divante_VueStorefrontBridge_StockController extends Divante_VueStorefrontB
     public function checkAction()
     {
         $params = $this->getRequest()->getParams();
-//        if ($this->getRequest()->getMethod() !== 'GET') {
-//            return $this->_result(500, 'Only GET method allowed');
-/*        } else*/ {
+        if (!$this->_checkHttpMethod('GET')) {
+            return $this->_result(500, 'Only GET method allowed');
+        } else {
             $sku = @array_keys($params)[0];
             if(!$sku) {
                 return $this->_result(500, 'No SKU provided');
@@ -21,7 +21,10 @@ class Divante_VueStorefrontBridge_StockController extends Divante_VueStorefrontB
                     $product_id = Mage::getModel('catalog/product')->getIdBySku($$ku);
                     $product = Mage::getModel('catalog/product')->load($product_id);
                     $stock = $product->getStockItem();
-                    return $this->_result(200, $stock->getData());
+                    $stockDTO = $stock->getData();
+                    $stockDTO['qty'] = 1; // TODO FIX ME
+                    $stockDTO['is_in_stock'] = true;
+                    return $this->_result(200, $stockDTO);
                     
                 } catch (Exception $err) {
                     return $this->_result(500, $err->getMessage());
