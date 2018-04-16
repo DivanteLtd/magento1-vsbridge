@@ -155,6 +155,8 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     $addressDTO = $address->getData();
                     $addressDTO['id'] = $addressDTO['entity_id'];
                     if($defaultBilling == $address->getId() || $address->getId() == $updatedBillingId) {
+                        // TODO: Street + Region fields (region_code should be)
+
                         // its customer default billing address
                         $addressDTO['default_billing'] = true;
                         $customerDTO['default_billing'] = $address->getId();
