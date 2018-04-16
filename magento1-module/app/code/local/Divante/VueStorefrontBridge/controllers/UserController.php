@@ -91,32 +91,88 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
 
     public function meAction(){
         $customer = $this->_currentCustomer($this->getRequest());
-        if(!customer) {
+        if(!$customer) {
             return $this->_result(500, 'No customer found with the specified token');
         } else { 
-            if ($this->_checkHttpMethod(array('POST'))) { // modify user data
-            }
-            $customerDTO = $customer->getData();
-            $allAddress = $customer->getAddresses();
-            $defaultBilling  = $customer->getDefaultBilling();
-            $defaultShipping = $customer->getDefaultShipping();
-                            
-            foreach ($allAddress as $address) {
-                $addressDTO = $address->getData();
-                if($defaultBilling == $address->getId()) {
-                    // its customer default billing address
-                    $addressDTO['default_billing'] = true;
-                } else if($defaultShipping == $address->getId()) {
-                    // its customer default shipping address
-                    $addressDTO['default_shipping'] = true;
+            try {
+                if ($this->_checkHttpMethod(array('POST'))) { // modify user data
+                    $request = _object_to_array($this->_getJsonBody());
+                    if(!$request['customer']) {
+                        return $this->_result(500, 'No customer data provided!');
+                    }
+
+                    //die(print_r($customer->getData(), true));
+                    $updatedCustomer = $request['customer'];
+                    $updatedCustomer['entity_id'] = $customer->getId();
+                    
+                    $customer->setData('firstname', $updatedCustomer['firstname'])
+                            ->setData('lastname', $updatedCustomer['lastname'])
+                            ->setData('email', $updatedCustomer['email'])
+                            ->save();    
+
+                    $updatedShippingId = 0;
+                    $updatedBillingId = 0;
+                    if ($updatedCustomer['addresses']) {
+                        foreach($updatedCustomer['addresses'] as $updatedAdress) {
+
+                            if($updatedAdress['default_billing']) {
+                                $bAddress = $customer->getDefaultBillingAddress();
+                                
+                                if(!$bAddress) 
+                                    $bAddress = Mage::getModel('customer/address');
+                                else
+                                    $bAddress->delete();
+
+
+                                $updatedAdress['parent_id'] = $customer->getId();
+                                $bAddress->setData($updatedAdress)->setIsDefaultBilling(1)->save();
+                                $updatedBillingId = $bAddress->getId();
+                            }
+                            if($updatedAdress['default_shipping']) {
+                                $bAddress = $customer->getDefaultShippingAddress();
+                              
+                                if(!$bAddress) 
+                                    $bAddress = Mage::getModel('customer/address');
+                                else
+                                    $bAddress->delete();
+
+                                $updatedAdress['parent_id'] = $customer->getId();           
+                                $bAddress->setData($updatedAdress)->setIsDefaultShipping(1)->save();
+                                $updatedShippingId = $bAddress->getId();
+                            }                        
+                        }
+                    }
                 }
-                $customerDTO['id'] = $customerDTO['entity_id'];
-                $customerDTO['addresses'][] = $addressDTO;
+                $customer->load($customer->getId());
+                
+                $customerDTO = $customer->getData();
+                $allAddress = $customer->getAddresses();
+                $defaultBilling  = $customer->getDefaultBilling();
+                $defaultShipping = $customer->getDefaultShipping();
+                $customerDTO['addresses'] = array();
+
+                foreach ($allAddress as $address) {
+                    $addressDTO = $address->getData();
+                    $addressDTO['id'] = $addressDTO['entity_id'];
+                    if($defaultBilling == $address->getId() || $address->getId() == $updatedBillingId) {
+                        // its customer default billing address
+                        $addressDTO['default_billing'] = true;
+                        $customerDTO['default_billing'] = $address->getId();
+                        $customerDTO['addresses'][] = $addressDTO;
+                    } else if($defaultShipping == $address->getId()|| $address->getId() == $updatedShippingId) {
+                        // its customer default shipping address
+                        $addressDTO['default_shipping'] = true;
+                        $customerDTO['default_shipping'] = $address->getId();
+                        $customerDTO['addresses'][] = $addressDTO;
+                    }
+                    $customerDTO['id'] = $customerDTO['entity_id'];
+                }
+                
+                $filteredCustomerData = $this->_filterDTO($customerDTO, array('password', 'password_hash', 'password_confirmation', 'confirmation', 'entity_type_id'));
+                return $this->_result(200, $filteredCustomerData);
+            } catch (Exception $err) {
+                return $this->_result(500, $err->getMessage());
             }
-            
-            $filteredCustomerData = $this->_filterDTO($customerDTO, array('password', 'password_hash', 'password_confirmation', 'confirmation', 'entity_type_id'));
-            return $this->_result(200, $filteredCustomerData);
-        
         }
     }
 }

@@ -16,6 +16,16 @@ function _filterDTO($dtoToFilter, array $blackList = null) {
     return $dtoToFilter;
 }
 
+function _object_to_array($object) {
+    if (is_object($object)) {
+     return array_map(__FUNCTION__, get_object_vars($object));
+    } else if (is_array($object)) {
+     return array_map(__FUNCTION__, $object);
+    } else {
+     return $object;
+    }
+   }
+
 class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controller_Front_Action
 {
     public function init()
