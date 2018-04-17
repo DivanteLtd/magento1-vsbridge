@@ -114,6 +114,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     $updatedBillingId = 0;
                     if ($updatedCustomer['addresses']) {
                         foreach($updatedCustomer['addresses'] as $updatedAdress) {
+                            $updatedAdress['region'] = $updatedAdress['region']['region'];
 
                             if($updatedAdress['default_billing']) {
                                 $bAddress = $customer->getDefaultBillingAddress();
@@ -123,8 +124,9 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                                 else
                                     $bAddress->delete();
 
-
                                 $updatedAdress['parent_id'] = $customer->getId();
+
+
                                 $bAddress->setData($updatedAdress)->setIsDefaultBilling(1)->save();
                                 $updatedBillingId = $bAddress->getId();
                             }
@@ -154,6 +156,8 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 foreach ($allAddress as $address) {
                     $addressDTO = $address->getData();
                     $addressDTO['id'] = $addressDTO['entity_id'];
+                    $addressDTO['region'] = array('region' => $addressDTO['region']);
+                    $addressDTO['street'] = explode("\n", $addressDTO['street']);
                     if($defaultBilling == $address->getId() || $address->getId() == $updatedBillingId) {
                         // TODO: Street + Region fields (region_code should be)
 

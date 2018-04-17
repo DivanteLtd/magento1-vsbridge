@@ -17,15 +17,20 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
             $store = $this->_currentStore();
             $customer = $this->_currentCustomer($this->getRequest());
 
-            // quote assign to new customer
-            $quoteObj = Mage::getModel('sales/quote');
-            if ($customer)
-                $quoteObj->assignCustomer($customer);
+            $quoteObj = Mage::getModel('sales/quote')->loadByCustomer($customer);
 
-            $quoteObj->setStoreId($store->getId());
-            $quoteObj->collectTotals();
-            $quoteObj->setIsActive(true);
-            $quoteObj->save();
+            if(!$quoteObj || !$quoteObj->getId()) {
+
+                // quote assign to new customer
+                $quoteObj = Mage::getModel('sales/quote');
+                if ($customer)
+                    $quoteObj->assignCustomer($customer);
+
+                $quoteObj->setStoreId($store->getId()); // TODO: return existing user cart id if exists
+                $quoteObj->collectTotals();
+                $quoteObj->setIsActive(true);
+                $quoteObj->save();
+            }
 
             $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
             return $this->_result(200, $customer ? $quoteObj->getId() : JWT::encode(array('cartId' =>$quoteObj->getId()), $secretKey));
@@ -239,6 +244,9 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
                             if($paymentMethodCode)
                                 $address->setPaymentMethod($paymentMethodCode);
                         }
+                    } else {
+                        $shippingAddress = $quoteObj->getShippingAddress()->setCollectShippingRates(true)
+                        ->collectShippingRates();
                     }
                     
                     $quoteData = $quoteObj->collectTotals()->save()->getData();
