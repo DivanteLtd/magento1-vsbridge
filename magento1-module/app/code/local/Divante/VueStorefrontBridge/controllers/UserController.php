@@ -111,18 +111,17 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                             ->save();    
 
                     $updatedShippingId = 0;
-                    $updatedBillingId = 0;
+                    $updatedBillingId = 0; 
                     if ($updatedCustomer['addresses']) {
                         foreach($updatedCustomer['addresses'] as $updatedAdress) {
                             $updatedAdress['region'] = $updatedAdress['region']['region'];
 
                             if($updatedAdress['default_billing']) {
-                                $bAddress = $customer->getDefaultBillingAddress();
+                                $bAddressId = $customer->getDefaultBilling();
+                                $bAddress = Mage::getModel('customer/address');
                                 
-                                if(!$bAddress) 
-                                    $bAddress = Mage::getModel('customer/address');
-                                else
-                                    $bAddress->delete();
+                                if($bAddressId) 
+                                    $bAddress->load($bAddressId);
 
                                 $updatedAdress['parent_id'] = $customer->getId();
 
@@ -131,16 +130,15 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                                 $updatedBillingId = $bAddress->getId();
                             }
                             if($updatedAdress['default_shipping']) {
-                                $bAddress = $customer->getDefaultShippingAddress();
-                              
-                                if(!$bAddress) 
-                                    $bAddress = Mage::getModel('customer/address');
-                                else
-                                    $bAddress->delete();
+                                $sAddressId = $customer->getDefaultShipping();
+                                $sAddress = Mage::getModel('customer/address');
+                                
+                                if($sAddressId) 
+                                    $sAddress->load($sAddressId);
 
                                 $updatedAdress['parent_id'] = $customer->getId();           
-                                $bAddress->setData($updatedAdress)->setIsDefaultShipping(1)->save();
-                                $updatedShippingId = $bAddress->getId();
+                                $sAddress->setData($updatedAdress)->setIsDefaultShipping(1)->save();
+                                $updatedShippingId = $sAddress->getId();
                             }                        
                         }
                     }
@@ -155,9 +153,28 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
 
                 foreach ($allAddress as $address) {
                     $addressDTO = $address->getData();
+                    
                     $addressDTO['id'] = $addressDTO['entity_id'];
                     $addressDTO['region'] = array('region' => $addressDTO['region']);
-                    $addressDTO['street'] = explode("\n", $addressDTO['street']);
+                    $streetDTO = explode("\n", $addressDTO['street']);
+                    if(count($streetDTO) < 2)
+                        $streetDTO[]='';
+
+                    $addressDTO['street'] = $streetDTO;
+                    if(!$addressDTO['firstname'])
+                        $addressDTO['firstname'] = $customerDTO['firstname'];
+                    if(!$addressDTO['lastname'])
+                        $addressDTO['lastname'] = $customerDTO['lastname'];
+                    if(!$addressDTO['city'])
+                        $addressDTO['city'] = '';
+                    if(!$addressDTO['country_id'])
+                        $addressDTO['country_id'] = 'US';                        
+                    if(!$addressDTO['postcode'])
+                        $addressDTO['postcode'] = '';          
+                    if(!$addressDTO['telephone'])
+                        $addressDTO['telephone'] = '';                                
+                    //die(print_r($addressDTO, true));
+
                     if($defaultBilling == $address->getId() || $address->getId() == $updatedBillingId) {
                         // TODO: Street + Region fields (region_code should be)
 
