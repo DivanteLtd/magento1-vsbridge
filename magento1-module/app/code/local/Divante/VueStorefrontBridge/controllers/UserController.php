@@ -1,6 +1,7 @@
 <?php
 require_once('AbstractController.php');
 require_once(__DIR__.'/../helpers/JWT.php');
+
 class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBridge_AbstractController
 {
     /**
@@ -43,6 +44,50 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
     }
 
     /**
+     * Refresh the user token
+     */
+    public function refreshAction() {
+
+    }
+
+    public function orderHistoryAction() {
+        if (!$this->_checkHttpMethod('GET')) {
+            return $this->_result(500, 'Only GET method allowed');
+        } else {
+            $customer = $this->_currentCustomer($this->getRequest());
+
+            if ($customer) {
+                $request = $this->getRequest();
+                $page = max(abs(intval($request->getParam('page'))), 1);
+                $pageSize = min(abs(intval($request->getParam('pageSize'))), 50);
+                
+                $collection = Mage::getModel("sales/order")->getCollection()
+                            ->addAttributeToSelect('*')
+                            /*->addFieldToFilter('customer_id', $customer->getId())*/->setPageSize($pageSize)->setCurPage($page);
+                
+                $ordersDTO = array();
+                foreach ($collection as $order) {
+                    $orderDTO = $order->getData();
+                    $orderDTO['id'] = $orderDTO['entity_id'];
+                    $orderDTO['items'] = array();
+
+                    foreach($order->getAllItems() as $item) {
+                        $itemDTO = $item->getData();
+                        $itemDTO['id'] = $itemDTO['item_id'];
+                        $orderDTO['items'][] = $itemDTO;
+                    }
+
+                    $ordersDTO[] = $orderDTO;
+                }
+                return $this->_result(200, array('items' => $ordersDTO));
+            } else {
+                return $this->_result(500, 'No user with specific token provided');                
+            }
+
+        }
+    }
+
+    /**
      * Register the customer
      * https://github.com/DivanteLtd/magento1-vsbridge/blob/master/doc/VueStorefrontBridge%20API%20specs.md#post-vsbridgeusercreate
      */
@@ -76,7 +121,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     try{
                         $customer->save();
                         $filteredCustomerData = $this->_filterDTO($customer->getData(), array('password', 'password_hash', 'password_confirmation', 'confirmation', 'entity_type_id'));
-                        return $this->_result(200, $filteredCustomerData);
+                        return $this->_result(200, $filteredCustomerData); // TODO: add support for 'Refresh-token'
                     }
                     catch (Exception $e) {
                         return $this->_result(500, $e->getMessage());
