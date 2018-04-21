@@ -44,6 +44,62 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
     }
 
     /**
+     * Send password reset link
+     * https://github.com/DivanteLtd/magento1-vsbridge/blob/master/doc/VueStorefrontBridge%20API%20specs.md#post-vsbridgeuserresetpassword
+     */
+    public function resetPasswordAction() {
+        if (!$this->_checkHttpMethod('POST')) {
+            return $this->_result(500, 'Only POST method allowed');
+        } else {
+            $request = $this->_getJsonBody();
+            if(!$request || !$request->email) {
+                return $this->_result(500, 'No e-mail provided');
+            } else {
+                $customer = Mage::getModel('customer/customer')
+                ->setWebsiteId(Mage::app()->getStore()->getWebsiteId())
+                ->loadByEmail($$request->email);
+                if ($customer)
+                    $customer->sendPasswordResetConfirmationEmail();                
+                else {
+                    return $this->_result(500, 'Wrong e-mail provided');
+                }
+            }
+
+        }
+    }
+
+    /**
+     * Change user password
+     * https://github.com/DivanteLtd/magento1-vsbridge/blob/master/doc/VueStorefrontBridge%20API%20specs.md#post-vsbridgeuserchangepassword
+     */
+    public function changePasswordAction() {
+        if (!$this->_checkHttpMethod('POST')) {
+            return $this->_result(500, 'Only POST method allowed');
+        } else {
+            $request = $this->_getJsonBody();
+            if(!$request || !$request->currentPassword || !$request->newPassword) {
+                return $this->_result(500, 'No current and new passwords provided!');
+            } else {
+                $customer = $this->_currentCustomer($this->getRequest());
+                if(!$customer) {
+                    return $this->_result(500, 'No customer found with the specified token');
+                } else {
+                    try {
+                        $customer->setWebsiteId(Mage::app()->getStore()->getWebsiteId())->authenticate($customer->getEmail(), $request->currentPassword);
+                        $customer->setPassword($request->newPassword);
+                        $customer->save();
+                        return $this->_result(200, 'New password set for the customer');
+                    } catch (Exception $err) {
+                        return $this->_result(500, 'Current password does not match the customer');
+                    }
+                }
+            }
+        }
+    }
+
+
+
+    /**
      * Refresh the user token
      */
     public function refreshAction() {
