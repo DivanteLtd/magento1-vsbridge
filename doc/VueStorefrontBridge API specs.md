@@ -3129,6 +3129,53 @@ null
 ```json
 {
     "code":200,
+    "result":"xu8h02nd66yq0gaayj4x3kpqwity02or",
+    "meta": { "refreshToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjEzOSJ9.a4HQc2HODmOj5SRMiv-EzWuMZbyIz0CLuVRhPw_MrOM" }
+}
+```
+
+or in case of error:
+
+```json
+{
+    "code":500,
+    "result":"You did not sign in correctly or your account is temporarily disabled."
+}
+```
+
+The result is a authorization token, that should be passed via `?token=xu8h02nd66yq0gaayj4x3kpqwity02or` GET param to all subsequent API calls that requires authorization
+
+#### RESPONSE CODES:
+
+- `200` when success
+- `500` in case of error
+
+
+### POST /vsbridge/user/refresh
+
+Refresh the user token
+
+#### GET PARAMS:
+
+```
+null
+```
+
+#### REQUEST BODY:
+
+```json
+{
+    "refreshToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjEzOSJ9.a4HQc2HODmOj5SRMiv-EzWuMZbyIz0CLuVRhPw_MrOM"
+}
+```
+
+#### RESPONSE BODY:
+
+`curl 'https://your-domain.example.com/vsbridge/user/login' -H 'content-type: application/json' -H 'accept: application/json' --data-binary '"refreshToken":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjEzOSJ9.a4HQc2HODmOj5SRMiv-EzWuMZbyIz0CLuVRhPw_MrOM"}'`
+
+```json
+{
+    "code":200,
     "result":"xu8h02nd66yq0gaayj4x3kpqwity02or"
 }
 ```
