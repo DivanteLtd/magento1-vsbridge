@@ -53,7 +53,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
                 return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
             } else {
                 if(!$this->_checkQuotePerms($quoteObj, $customer)) {
-                    return $this->_result(500, 'Mismatched quote owner for cartId = '.$this->getRequest()->getParam('cartId'));
+                    return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
                 } else {
                     $items = array();
                     foreach ($quoteObj->getAllItems() as $item) {
@@ -96,7 +96,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
                 return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
             } else {
                 if(!$this->_checkQuotePerms($quoteObj, $customer)) {
-                    return $this->_result(500, 'Mismatched quote owner for cartId = '.$this->getRequest()->getParam('cartId'));
+                    return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
                 } else {
                     $couponCode = $this->getRequest()->getParam('coupon');
                     
@@ -138,7 +138,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
                 return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
             } else {
                 if(!$this->_checkQuotePerms($quoteObj, $customer)) {
-                    return $this->_result(500, 'Mismatched quote owner for cartId = '.$this->getRequest()->getParam('cartId'));
+                    return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
                 } else {
                     try {
                         $request = $this->_getJsonBody();
@@ -174,7 +174,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
                 return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
             } else {
                 if(!$this->_checkQuotePerms($quoteObj, $customer)) {
-                    return $this->_result(500, 'Mismatched quote owner for cartId = '.$this->getRequest()->getParam('cartId'));
+                    return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
                 } else {
                     try {
                         return $this->_result(200, $quoteObj->getCouponCode());
@@ -206,7 +206,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
                 return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
             } else {
                 if(!$this->_checkQuotePerms($quoteObj, $customer)) {
-                    return $this->_result(500, 'Mismatched quote owner for cartId = '.$this->getRequest()->getParam('cartId'));
+                    return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
                 } else {
                     $request = $this->_getJsonBody();
 
@@ -337,7 +337,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
                 return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
             } else {
                 if(!$this->_checkQuotePerms($quoteObj, $customer)) {
-                    return $this->_result(500, 'Mismatched quote owner for cartId = '.$this->getRequest()->getParam('cartId'));
+                    return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
                 } else {
 
                     $store = $quoteObj->getStoreId();
@@ -410,7 +410,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
                 return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
             } else {
                 if(!$this->_checkQuotePerms($quoteObj, $customer)) {
-                    return $this->_result(500, 'Mismatched quote owner for cartId = '.$this->getRequest()->getParam('cartId'));
+                    return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
                 } else {
                     $request = $this->_getJsonBody();
                     $quoteShippingAddress = $quoteObj->getShippingAddress();
@@ -480,7 +480,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
                         return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
                     } else {
                         if (!$this->_checkQuotePerms($quoteObj, $customer)) {
-                            return $this->_result(500, 'Mismatched quote owner for cartId = ' . $this->getRequest()->getParam('cartId'));
+                            return $this->_result(500, 'User is not authroized to access cartId = ' . $this->getRequest()->getParam('cartId'));
                         } else {
 
                            try {
@@ -571,7 +571,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
                         return $this->_result(500, 'No quote found for cartId = ' . $this->getRequest()->getParam('cartId'));
                     } else {
                         if (!$this->_checkQuotePerms($quoteObj, $customer)) {
-                            return $this->_result(500, 'Mismatched quote owner for cartId = ' . $this->getRequest()->getParam('cartId'));
+                            return $this->_result(500, 'User is not authroized to access cartId = ' . $this->getRequest()->getParam('cartId'));
                         } else {
 
                             try {

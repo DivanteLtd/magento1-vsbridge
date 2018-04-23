@@ -137,7 +137,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 }
                 return $this->_result(200, array('items' => $ordersDTO));
             } else {
-                return $this->_result(500, 'No user with specific token provided');                
+                return $this->_result(500, 'User is not authroized to access self');                
             }
 
         }
@@ -193,7 +193,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
     public function meAction(){
         $customer = $this->_currentCustomer($this->getRequest());
         if(!$customer) {
-            return $this->_result(500, 'No customer found with the specified token');
+            return $this->_result(500, 'User is not authroized to access self');
         } else { 
             try {
                 if ($this->_checkHttpMethod(array('POST'))) { // modify user data
