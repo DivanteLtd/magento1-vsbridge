@@ -11,29 +11,33 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
      */
     public function createAction()
     {
-        if ($this->getRequest()->getMethod() !== 'POST' && $this->getRequest()->getMethod() !== 'OPTIONS') {
-            return $this->_result(500, 'Only POST method allowed');
-        } else {
-            $store = $this->_currentStore();
-            $customer = $this->_currentCustomer($this->getRequest());
+        try {
+            if ($this->getRequest()->getMethod() !== 'POST' && $this->getRequest()->getMethod() !== 'OPTIONS') {
+                return $this->_result(500, 'Only POST method allowed');
+            } else {
+                $store = $this->_currentStore();
+                $customer = $this->_currentCustomer($this->getRequest());
 
-            $quoteObj = Mage::getModel('sales/quote')->loadByCustomer($customer);
+                $quoteObj = Mage::getModel('sales/quote')->loadByCustomer($customer);
 
-            if(!$quoteObj || !$quoteObj->getId()) {
+                if(!$quoteObj || !$quoteObj->getId()) {
 
-                // quote assign to new customer
-                $quoteObj = Mage::getModel('sales/quote');
-                if ($customer)
-                    $quoteObj->assignCustomer($customer);
+                    // quote assign to new customer
+                    $quoteObj = Mage::getModel('sales/quote');
+                    if ($customer)
+                        $quoteObj->assignCustomer($customer);
 
-                $quoteObj->setStoreId($store->getId()); // TODO: return existing user cart id if exists
-                $quoteObj->collectTotals();
-                $quoteObj->setIsActive(true);
-                $quoteObj->save();
+                    $quoteObj->setStoreId($store->getId()); // TODO: return existing user cart id if exists
+                    $quoteObj->collectTotals();
+                    $quoteObj->setIsActive(true);
+                    $quoteObj->save();
+                }
+
+                $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
+                return $this->_result(200, $customer ? $quoteObj->getId() : JWT::encode(array('cartId' =>$quoteObj->getId()), $secretKey));
             }
-
-            $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
-            return $this->_result(200, $customer ? $quoteObj->getId() : JWT::encode(array('cartId' =>$quoteObj->getId()), $secretKey));
+        } catch (Exception $err) {
+            return $this->_result(500, $err->getMessage());
         }
     }
 
@@ -43,35 +47,39 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
      */
     public function pullAction()
     {
-        if (!$this->_checkHttpMethod('GET')) {
-            return $this->_result(500, 'Only GET method allowed');
-        } else {
-            $customer = $this->_currentCustomer($this->getRequest());
-            $quoteObj = $this->_currentQuote($this->getRequest());
-
-            if(!$quoteObj) {
-                return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
+        try {
+            if (!$this->_checkHttpMethod('GET')) {
+                return $this->_result(500, 'Only GET method allowed');
             } else {
-                if(!$this->_checkQuotePerms($quoteObj, $customer)) {
-                    return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
-                } else {
-                    $items = array();
-                    foreach ($quoteObj->getAllItems() as $item) {
-                        $itemDto = $item->getData();
-                        $items[] = array(
-                            'item_id' => $itemDto['item_id'],
-                            'sku' => $itemDto['sku'],
-                            'name' => $itemDto['name'],
-                            'price' => $itemDto['price'],
-                            'qty' => $itemDto['qty'],
-                            'product_type' => $itemDto['product_type'],
-                            'quote_id' => $itemDto['quote_id']
-                        );
-                    }
-                    return $this->_result(200, $items);
+                $customer = $this->_currentCustomer($this->getRequest());
+                $quoteObj = $this->_currentQuote($this->getRequest());
 
+                if(!$quoteObj) {
+                    return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
+                } else {
+                    if(!$this->_checkQuotePerms($quoteObj, $customer)) {
+                        return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
+                    } else {
+                        $items = array();
+                        foreach ($quoteObj->getAllItems() as $item) {
+                            $itemDto = $item->getData();
+                            $items[] = array(
+                                'item_id' => $itemDto['item_id'],
+                                'sku' => $itemDto['sku'],
+                                'name' => $itemDto['name'],
+                                'price' => $itemDto['price'],
+                                'qty' => $itemDto['qty'],
+                                'product_type' => $itemDto['product_type'],
+                                'quote_id' => $itemDto['quote_id']
+                            );
+                        }
+                        return $this->_result(200, $items);
+
+                    }
                 }
             }
+        } catch (Exception $err) {
+            return $this->_result(500, $err->getMessage());
         }
     }
 
@@ -196,100 +204,104 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
      */
     public function totalsAction()
     {
-        if (!$this->_checkHttpMethod(array('GET', 'POST'))) {
-            return $this->_result(500, 'Only GET or POST methods allowed');
-        } else {
-            $customer = $this->_currentCustomer($this->getRequest());
-            $quoteObj = $this->_currentQuote($this->getRequest());
-
-            if(!$quoteObj) {
-                return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
+        try {
+            if (!$this->_checkHttpMethod(array('GET', 'POST'))) {
+                return $this->_result(500, 'Only GET or POST methods allowed');
             } else {
-                if(!$this->_checkQuotePerms($quoteObj, $customer)) {
-                    return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
+                $customer = $this->_currentCustomer($this->getRequest());
+                $quoteObj = $this->_currentQuote($this->getRequest());
+
+                if(!$quoteObj) {
+                    return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
                 } else {
-                    $request = $this->_getJsonBody();
-
-                    if ($request) {
-                        $paymentMethodCode = $request->methods->paymentMethod->method;
-                        $shippingMethodCode = $request->methods->shippingMethodCode;
-                        $shippingMethodCarrier = $request->methods->shippingMethodCarrier;
-
-
-                        $address = null;
-                        if ($quoteObj->isVirtual()) {
-                            $address = $quoteObj->getBillingAddress();
-                        } else {
-                            $address = $quoteObj->getShippingAddress();
-
-                            $shippingAddress = $quoteObj->getShippingAddress();
-
-                            if($request->addressInformation) {
-
-                                $shippingMethodCarrier = $request->addressInformation->shipping_carrier_code;
-                                $shippingMethodCode = $request->addressInformation->shipping_method_code;
-                                        
-                                $countryId = $request->addressInformation->shipping_address->country_id;
-                                if($countryId) {
-                                    $shippingAddress->setCountryId($countryId)->setCollectShippingrates(true)->save();
-                                }
-                            }
-                            
-                            $shippingAddress->setCollectShippingRates(true)
-                                ->collectShippingRates()
-                                ->setShippingMethod($shippingMethodCode);                            
-                        }                        
-
-                        if ($address) {
-                            if($paymentMethodCode)
-                                $address->setPaymentMethod($paymentMethodCode);
-                        }
+                    if(!$this->_checkQuotePerms($quoteObj, $customer)) {
+                        return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
                     } else {
-                        $shippingAddress = $quoteObj->getShippingAddress()->setCollectShippingRates(true)
-                        ->collectShippingRates();
-                    }
-                    
-                    $quoteData = $quoteObj->collectTotals()->save()->getData();
-                    $totalsDTO = array(
-                        'grand_total' => $quoteData['grand_total'],
-                        'base_grand_total' => $quoteData['base_grand_total'],
-                        'base_subtotal' => $quoteData['base_subtotal'],
-                        'subtotal' => $quoteData['subtotal'],
-                        'discount_amount' => $quoteData['discount_amount'],
-                        'base_discount_amount' => $quoteData['base_discount_amount'],
-                        'subtotal_with_discount' => $quoteData['subtotal_with_discount'],
-                        'shipping_amount' => $quoteData['shipping_amount'],
-                        'base_shipping_amount' => $quoteData['base_shipping_amount'],
-                        'shipping_discount_amount' => $quoteData['shipping_discount_amount'],
-                        'base_shipping_discount_amount' => $quoteData['base_shipping_discount_amount'],
-                        'tax_amount' => $quoteData['tax_amount'],
-                        'base_tax_amount' => $quoteData['base_tax_amount'],
-                        'weee_tax_applied_amount' => $quoteData['weee_tax_applied_amount'],
-                        'shipping_tax_amount' => $quoteData['shipping_tax_amount'],
-                        'base_shipping_tax_amount' => $quoteData['base_shipping_tax_amount'],
-                        'subtotal_incl_tax' => $quoteData['subtotal_incl_tax'],
-                        'base_subtotal_incl_tax' => $quoteData['base_subtotal_incl_tax'],
-                        'shipping_incl_tax' => $quoteData['shipping_incl_tax'],
-                        'base_shipping_incl_tax' => $quoteData['base_shipping_incl_tax'],                        
-                        'base_currency_code' => $quoteData['base_currency_code'],
-                        'quote_currency_code' => $quoteData['quote_currency_code'],
-                        'items_qty' => $quoteData['items_qty'],
-                        'items' => array(),
-                        'total_segments' => array()
-                    );
+                        $request = $this->_getJsonBody();
 
-                    foreach ($quoteObj->getAllItems() as $item) {
-                        $itemDto = $item->getData();
-                        $totalsDTO['items'][] = $itemDto;
-                    }
-                    $totalsCollection = $quoteObj->getTotals();
-                    foreach($totalsCollection as $code => $total) {
-                        $totalsDTO['total_segments'][] = $total->getData();
-                    }
-                    return $this->_result(200, $totalsDTO);
+                        if ($request) {
+                            $paymentMethodCode = $request->methods->paymentMethod->method;
+                            $shippingMethodCode = $request->methods->shippingMethodCode;
+                            $shippingMethodCarrier = $request->methods->shippingMethodCarrier;
 
+
+                            $address = null;
+                            if ($quoteObj->isVirtual()) {
+                                $address = $quoteObj->getBillingAddress();
+                            } else {
+                                $address = $quoteObj->getShippingAddress();
+
+                                $shippingAddress = $quoteObj->getShippingAddress();
+
+                                if($request->addressInformation) {
+
+                                    $shippingMethodCarrier = $request->addressInformation->shipping_carrier_code;
+                                    $shippingMethodCode = $request->addressInformation->shipping_method_code;
+                                            
+                                    $countryId = $request->addressInformation->shipping_address->country_id;
+                                    if($countryId) {
+                                        $shippingAddress->setCountryId($countryId)->setCollectShippingrates(true)->save();
+                                    }
+                                }
+                                
+                                $shippingAddress->setCollectShippingRates(true)
+                                    ->collectShippingRates()
+                                    ->setShippingMethod($shippingMethodCode);                            
+                            }                        
+
+                            if ($address) {
+                                if($paymentMethodCode)
+                                    $address->setPaymentMethod($paymentMethodCode);
+                            }
+                        } else {
+                            $shippingAddress = $quoteObj->getShippingAddress()->setCollectShippingRates(true)
+                            ->collectShippingRates();
+                        }
+                        
+                        $quoteData = $quoteObj->collectTotals()->save()->getData();
+                        $totalsDTO = array(
+                            'grand_total' => $quoteData['grand_total'],
+                            'base_grand_total' => $quoteData['base_grand_total'],
+                            'base_subtotal' => $quoteData['base_subtotal'],
+                            'subtotal' => $quoteData['subtotal'],
+                            'discount_amount' => $quoteData['discount_amount'],
+                            'base_discount_amount' => $quoteData['base_discount_amount'],
+                            'subtotal_with_discount' => $quoteData['subtotal_with_discount'],
+                            'shipping_amount' => $quoteData['shipping_amount'],
+                            'base_shipping_amount' => $quoteData['base_shipping_amount'],
+                            'shipping_discount_amount' => $quoteData['shipping_discount_amount'],
+                            'base_shipping_discount_amount' => $quoteData['base_shipping_discount_amount'],
+                            'tax_amount' => $quoteData['tax_amount'],
+                            'base_tax_amount' => $quoteData['base_tax_amount'],
+                            'weee_tax_applied_amount' => $quoteData['weee_tax_applied_amount'],
+                            'shipping_tax_amount' => $quoteData['shipping_tax_amount'],
+                            'base_shipping_tax_amount' => $quoteData['base_shipping_tax_amount'],
+                            'subtotal_incl_tax' => $quoteData['subtotal_incl_tax'],
+                            'base_subtotal_incl_tax' => $quoteData['base_subtotal_incl_tax'],
+                            'shipping_incl_tax' => $quoteData['shipping_incl_tax'],
+                            'base_shipping_incl_tax' => $quoteData['base_shipping_incl_tax'],                        
+                            'base_currency_code' => $quoteData['base_currency_code'],
+                            'quote_currency_code' => $quoteData['quote_currency_code'],
+                            'items_qty' => $quoteData['items_qty'],
+                            'items' => array(),
+                            'total_segments' => array()
+                        );
+
+                        foreach ($quoteObj->getAllItems() as $item) {
+                            $itemDto = $item->getData();
+                            $totalsDTO['items'][] = $itemDto;
+                        }
+                        $totalsCollection = $quoteObj->getTotals();
+                        foreach($totalsCollection as $code => $total) {
+                            $totalsDTO['total_segments'][] = $total->getData();
+                        }
+                        return $this->_result(200, $totalsDTO);
+
+                    }
                 }
             }
+        } catch (Exception $err) {
+            return $this->_result(500, $err->getMessage());
         }
     }    
 
@@ -327,44 +339,48 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
      */
     public function paymentMethodsAction()
     {
-        if (!$this->_checkHttpMethod('GET')) {
-            return $this->_result(500, 'Only GET method allowed');
-        } else {
-            $customer = $this->_currentCustomer($this->getRequest());
-            $quoteObj = $this->_currentQuote($this->getRequest());
-
-            if(!$quoteObj) {
-                return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
+            try {
+            if (!$this->_checkHttpMethod('GET')) {
+                return $this->_result(500, 'Only GET method allowed');
             } else {
-                if(!$this->_checkQuotePerms($quoteObj, $customer)) {
-                    return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
-                } else {
+                $customer = $this->_currentCustomer($this->getRequest());
+                $quoteObj = $this->_currentQuote($this->getRequest());
 
-                    $store = $quoteObj->getStoreId();
-            
-                    $total = $quoteObj->getBaseSubtotal();
-            
-                    $methodsResult = array();
-                    $methods = Mage::helper('payment')->getStoreMethods($store, $quoteObj);
-            
-                    foreach ($methods as $method) {
-                        /** @var $method Mage_Payment_Model_Method_Abstract */
-                        if ($this->_canUsePaymentMethod($method, $quoteObj)) {
-                            $isRecurring = $quoteObj->hasRecurringItems() && $method->canManageRecurringProfiles();
-            
-                            if ($total != 0 || $method->getCode() == 'free' || $isRecurring) {
-                                $methodsResult[] = array(
-                                    'code' => $method->getCode(),
-                                    'title' => $method->getTitle()
-                                );
+                if(!$quoteObj) {
+                    return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
+                } else {
+                    if(!$this->_checkQuotePerms($quoteObj, $customer)) {
+                        return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
+                    } else {
+
+                        $store = $quoteObj->getStoreId();
+                
+                        $total = $quoteObj->getBaseSubtotal();
+                
+                        $methodsResult = array();
+                        $methods = Mage::helper('payment')->getStoreMethods($store, $quoteObj);
+                
+                        foreach ($methods as $method) {
+                            /** @var $method Mage_Payment_Model_Method_Abstract */
+                            if ($this->_canUsePaymentMethod($method, $quoteObj)) {
+                                $isRecurring = $quoteObj->hasRecurringItems() && $method->canManageRecurringProfiles();
+                
+                                if ($total != 0 || $method->getCode() == 'free' || $isRecurring) {
+                                    $methodsResult[] = array(
+                                        'code' => $method->getCode(),
+                                        'title' => $method->getTitle()
+                                    );
+                                }
                             }
                         }
-                    }
-                                
-                    return $this->_result(200, $methodsResult);
+                                    
+                        return $this->_result(200, $methodsResult);
 
+                    }
                 }
             }
+        } catch (Exception $err) {
+            return $this->_result(500, $err->getMessage());
         }
     }
     
@@ -400,59 +416,63 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
      */
     public function shippingMethodsAction()
     {
-        if (!$this->_checkHttpMethod('POST')) {
-            return $this->_result(500, 'Only POST method allowed');
-        } else {
-            $customer = $this->_currentCustomer($this->getRequest());
-            $quoteObj = $this->_currentQuote($this->getRequest());
-
-            if(!$quoteObj) {
-                return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
+            try {
+            if (!$this->_checkHttpMethod('POST')) {
+                return $this->_result(500, 'Only POST method allowed');
             } else {
-                if(!$this->_checkQuotePerms($quoteObj, $customer)) {
-                    return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
-                } else {
-                    $request = $this->_getJsonBody();
-                    $quoteShippingAddress = $quoteObj->getShippingAddress();
+                $customer = $this->_currentCustomer($this->getRequest());
+                $quoteObj = $this->_currentQuote($this->getRequest());
 
-                    if($request->address) {
-                        $countryId = $request->address->country_id;
-                        if($countryId) {
-                            $quoteShippingAddress->setCountryId($countryId)->setCollectShippingrates(true)->save();
-                        }
-                    }
-                    
-                    $store = $quoteObj->getStoreId();
-                    if (is_null($quoteShippingAddress->getId())) {
-                        $this->_result(500, 'Shipping address is not set');
-                    }
-            
-                    try {
-                        $groupedRates = $quoteShippingAddress->setCollectShippingRates(true)->collectShippingRates()->getGroupedAllShippingRates();
-                        $ratesResult = array();
-                        foreach ($groupedRates as $carrierCode => $rates ) {
-                            $carrierName = $carrierCode;
-                            if (!is_null(Mage::getStoreConfig('carriers/'.$carrierCode.'/title'))) {
-                                $carrierName = Mage::getStoreConfig('carriers/'.$carrierCode.'/title');
-                            }
-            
-                            foreach ($rates as $rate) {
-                                $rateItem = $rate->getData();
-                                $rateItem['carrier_title'] = $carrierName;
-                                $rateItem['carrier_code'] = $carrierCode;
-                                $rateItem['method_code'] = $rateItem['method'];
-                                $rateItem['amount'] = $rateItem['price'];
-                                
-                                $ratesResult[] = $rateItem;
-                                unset($rateItem);
+                if(!$quoteObj) {
+                    return $this->_result(500, 'No quote found for cartId = '.$this->getRequest()->getParam('cartId'));
+                } else {
+                    if(!$this->_checkQuotePerms($quoteObj, $customer)) {
+                        return $this->_result(500, 'User is not authroized to access cartId = '.$this->getRequest()->getParam('cartId'));
+                    } else {
+                        $request = $this->_getJsonBody();
+                        $quoteShippingAddress = $quoteObj->getShippingAddress();
+
+                        if($request->address) {
+                            $countryId = $request->address->country_id;
+                            if($countryId) {
+                                $quoteShippingAddress->setCountryId($countryId)->setCollectShippingrates(true)->save();
                             }
                         }
-                        return $this->_result(200, $ratesResult);
-                    } catch (Mage_Core_Exception $e) {
-                        return$this->_result(500, $e->getMessage());
+                        
+                        $store = $quoteObj->getStoreId();
+                        if (is_null($quoteShippingAddress->getId())) {
+                            $this->_result(500, 'Shipping address is not set');
+                        }
+                
+                        try {
+                            $groupedRates = $quoteShippingAddress->setCollectShippingRates(true)->collectShippingRates()->getGroupedAllShippingRates();
+                            $ratesResult = array();
+                            foreach ($groupedRates as $carrierCode => $rates ) {
+                                $carrierName = $carrierCode;
+                                if (!is_null(Mage::getStoreConfig('carriers/'.$carrierCode.'/title'))) {
+                                    $carrierName = Mage::getStoreConfig('carriers/'.$carrierCode.'/title');
+                                }
+                
+                                foreach ($rates as $rate) {
+                                    $rateItem = $rate->getData();
+                                    $rateItem['carrier_title'] = $carrierName;
+                                    $rateItem['carrier_code'] = $carrierCode;
+                                    $rateItem['method_code'] = $rateItem['method'];
+                                    $rateItem['amount'] = $rateItem['price'];
+                                    
+                                    $ratesResult[] = $rateItem;
+                                    unset($rateItem);
+                                }
+                            }
+                            return $this->_result(200, $ratesResult);
+                        } catch (Mage_Core_Exception $e) {
+                            return$this->_result(500, $e->getMessage());
+                        }
                     }
                 }
             }
+        } catch (Exception $err) {
+            return $this->_result(500, $err->getMessage());
         }
     }    
 

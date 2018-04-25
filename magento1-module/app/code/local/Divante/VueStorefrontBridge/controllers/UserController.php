@@ -13,31 +13,35 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
         if (!$this->_checkHttpMethod('POST')) {
             return $this->_result(500, 'Only POST method allowed');
         } else {
+            try {
+                $request = $this->_getJsonBody();
 
-            $request = $this->_getJsonBody();
-
-            if (!$request) {
-                return $this->_result(500, 'No JSON object found in the request body');
-            } else {
-                if (!$request->username || !$request->password) {
-                    return $this->_result(500, 'No username or password given!');
+                if (!$request) {
+                    return $this->_result(500, 'No JSON object found in the request body');
                 } else {
-                    $session = Mage::getSingleton( 'customer/session' );
-                    $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
+                    if (!$request->username || !$request->password) {
+                        return $this->_result(500, 'No username or password given!');
+                    } else {
+                        $session = Mage::getSingleton( 'customer/session' );
+                        $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
 
-                    if($session->login($request->username, $request->password)) {
-                        $user = $session->getCustomer();
-                        if ($user->getId()) {
-                            return $this->_result(200, JWT::encode(array('id' => $user->getId()), $secretKey));
+                        if($session->login($request->username, $request->password)) {
+                            $user = $session->getCustomer();
+                            if ($user->getId()) {
+                                $refreshToken = JWT::encode($request, $secretKey, 'HS256');
+                                return $this->_result(200, JWT::encode(array('id' => $user->getId()), $secretKey), array('refreshToken' => $refreshToken));
+                            } else {
+                                return $this->_result(500, 'You did not sign in correctly or your account is temporarily disabled.');
+                            }
                         } else {
                             return $this->_result(500, 'You did not sign in correctly or your account is temporarily disabled.');
                         }
-                    } else {
-                        return $this->_result(500, 'You did not sign in correctly or your account is temporarily disabled.');
+
+
                     }
-
-
                 }
+            } catch (Exception $err) {
+                return $this->_result(500, $err->getMessage());
             }
 
         }
@@ -55,13 +59,17 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
             if(!$request || !$request->email) {
                 return $this->_result(500, 'No e-mail provided');
             } else {
-                $customer = Mage::getModel('customer/customer')
-                ->setWebsiteId(Mage::app()->getStore()->getWebsiteId())
-                ->loadByEmail($$request->email);
-                if ($customer)
-                    $customer->sendPasswordResetConfirmationEmail();                
-                else {
-                    return $this->_result(500, 'Wrong e-mail provided');
+                try {
+                    $customer = Mage::getModel('customer/customer')
+                    ->setWebsiteId(Mage::app()->getStore()->getWebsiteId())
+                    ->loadByEmail($$request->email);
+                    if ($customer)
+                        $customer->sendPasswordResetConfirmationEmail();                
+                    else {
+                        return $this->_result(500, 'Wrong e-mail provided');
+                    }
+                } catch (Exception $err) {
+                    return $this->_result(500, $err->getMessage());
                 }
             }
 
@@ -103,7 +111,38 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
      * Refresh the user token
      */
     public function refreshAction() {
+        try {
+            if (!$this->_checkHttpMethod('POST')) {
+                return $this->_result(500, 'Only POST method allowed');
+            } else {
+                $request = $this->_getJsonBody();
+                if(!$request || !$request->refreshToken) {
+                    return $this->_result(500, 'No request token provided');
+                } else  {
+                    $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
+                    $loginRequest = JWT::decode($request->refreshToken, $secretKey, 'HS256');
+                    if(!$loginRequest || !$loginRequest->username || !$loginRequest->password) {
+                        return $this->_result(500, 'Invalid token or no username password pair');
+                    } else {
+                        $session = Mage::getSingleton( 'customer/session' );
 
+                        if($session->login($loginRequest->username, $loginRequest->password)) {
+                            $user = $session->getCustomer();
+                            if ($user->getId()) {
+                                $refreshToken = JWT::encode($loginRequest, $secretKey);
+                                return $this->_result(200, JWT::encode(array('id' => $user->getId()), $secretKey), array('refreshToken' => $refreshToken));
+                            } else {
+                                return $this->_result(500, 'You did not sign in correctly or your account is temporarily disabled.');
+                            }
+                        } else {
+                            return $this->_result(500, 'You did not sign in correctly or your account is temporarily disabled.');
+                        }
+                    }                
+                }
+            }
+        } catch (Exception $err) {
+            return $this->_result(500, $err->getMessage());
+        }
     }
 
     public function orderHistoryAction() {

@@ -137,11 +137,15 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
         return _filterDTO($dtoToFilter, $blackList);
     }
 
-    protected function _result($code, $result){
-        $this->getResponse()->setBody(json_encode(array(
+    protected function _result($code, $result, $meta = null){
+        $resultDTO = array(
             'code' => $code,
             'result' => $result
-        ), JSON_NUMERIC_CHECK))->setHttpResponseCode($code)->setHeader('Content-Type', 'application/json')
+        );
+        if($meta) {
+            $resultDTO['meta'] = $meta;
+        }
+        $this->getResponse()->setBody(json_encode($resultDTO, JSON_NUMERIC_CHECK))->setHttpResponseCode($code)->setHeader('Content-Type', 'application/json')
             ->setHeader('Access-Control-Allow-Origin', '*')
             ->setHeader('Access-Control-Expose-Headers', 'Link');
     }
