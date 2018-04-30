@@ -2678,7 +2678,7 @@ You have totals data for the current, synchronized quote returned:
                         "weee_tax_applied_amount":null,
                         "weee_tax_applied":null,
                         "name":"Logan  HeatTec&reg; Tee-XS-Black",
-                        "options": '[{ "label": "Color", "value": "red" }, { "label: "Size", "value": "XL" }]',
+                        "options": "[{ \"label\": \"Color\", \"value\": \"red\" }, { \"label\": \"Size\", \"value\": \"XL\" }]",
                         "product_option":{  
                            "extension_attributes":{  
                               "custom_options":[  
