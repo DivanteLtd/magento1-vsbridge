@@ -2698,7 +2698,7 @@ You have totals data for the current, synchronized quote returned:
 
                               ]
                            }    
-                        
+                        }
                     }
                 ],
             "total_segments":
