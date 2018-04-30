@@ -2435,20 +2435,34 @@ This method is called just after any Vue Storefrotn cart modification to check i
 
 #### RESPONSE BODY:
 ```json
-{
-    "code":200,
-    "result":
-        [
-            {
-                "item_id":5853,
-                "sku":"MS10-XS-Black",
-                "qty":1,"name":"Logan  HeatTec&reg; Tee-XS-Black",
-                "price":0,
-                "product_type":"simple",
-                "quote_id":"81668"
-            }
-        ]
+{  
+   "cartItem":{  
+      "sku":"WS12-XS-Orange",
+      "qty":1,
+      "product_option":{  
+         "extension_attributes":{  
+            "custom_options":[  
+
+            ],
+            "configurable_item_options":[  
+               {  
+                  "option_id":"93",
+                  "option_value":"56"
+               },
+               {  
+                  "option_id":"142",
+                  "option_value":"167"
+               }
+            ],
+            "bundle_options":[  
+
+            ]
+         }
+      },
+      "quoteId":"0a8109552020cc80c99c54ad13ef5d5a"
+   }
 }
+
 ```
 
 
@@ -2466,14 +2480,32 @@ This method is called just after `api/cart/pull` as a consequence of the synchro
 #### REQUEST BODY:
 
 ```json
-{
-    "cartItem":
-        {
-            "sku":"MS10-XS-Black",
-            "qty":2,
-            "item_id":5853,
-            "quoteId":"81668"
-        }
+{  
+   "cartItem":{  
+      "sku":"WS12-XS-Orange",
+      "qty":1,
+      "product_option":{  
+         "extension_attributes":{  
+            "custom_options":[  
+
+            ],
+            "configurable_item_options":[  
+               {  
+                  "option_id":"93",
+                  "option_value":"56"
+               },
+               {  
+                  "option_id":"142",
+                  "option_value":"167"
+               }
+            ],
+            "bundle_options":[  
+
+            ]
+         }
+      },
+      "quoteId":"0a8109552020cc80c99c54ad13ef5d5a"
+   }
 }
 ```
 
@@ -2645,7 +2677,28 @@ You have totals data for the current, synchronized quote returned:
                         "options":"[]",
                         "weee_tax_applied_amount":null,
                         "weee_tax_applied":null,
-                        "name":"Logan  HeatTec&reg; Tee-XS-Black"
+                        "name":"Logan  HeatTec&reg; Tee-XS-Black",
+                        "options": '[{ "label": "Color", "value": "red" }, { "label: "Size", "value": "XL" }]',
+                        "product_option":{  
+                           "extension_attributes":{  
+                              "custom_options":[  
+
+                              ],
+                              "configurable_item_options":[  
+                                 {  
+                                    "option_id":"93",
+                                    "option_value":"56"
+                                 },
+                                 {  
+                                    "option_id":"142",
+                                    "option_value":"167"
+                                 }
+                              ],
+                              "bundle_options":[  
+
+                              ]
+                           }    
+                        
                     }
                 ],
             "total_segments":
