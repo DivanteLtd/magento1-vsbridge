@@ -21,7 +21,7 @@
     <default>
         <vsbridge>
             <general>
-                <jwt_token>Geiw0qua</jwt_token>
+                <jwt_secret>Geiw0qua</jwt_secret>
             </general>
         </vsbridge>
     </default>
