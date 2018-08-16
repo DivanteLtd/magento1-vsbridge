@@ -3,6 +3,8 @@ require_once('AbstractController.php');
 require_once(__DIR__.'/../helpers/JWT.php');
 class Divante_VueStorefrontBridge_AuthController extends Divante_VueStorefrontBridge_AbstractController
 {
+    const XML_CONFIG_JWT_SECRET = 'vsbridge/general/jwt_token';
+
     public function adminAction()
     {
         if($this->getRequest()->getMethod() !== 'POST'){
@@ -18,7 +20,7 @@ class Divante_VueStorefrontBridge_AuthController extends Divante_VueStorefrontBr
                     return $this->_result(500, 'No username or password given!');
                 } else {
                     $session = Mage::getSingleton('admin/session');
-                    $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
+                    $secretKey = trim(Mage::getStoreConfig(self::XML_CONFIG_JWT_SECRET));
 
                     $user = $session->login($request->username, $request->password);
                     if ($user->getId()) {
