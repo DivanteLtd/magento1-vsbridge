@@ -3,8 +3,6 @@ require_once('AbstractController.php');
 require_once(__DIR__.'/../helpers/JWT.php');
 class Divante_VueStorefrontBridge_AuthController extends Divante_VueStorefrontBridge_AbstractController
 {
-    const XML_CONFIG_JWT_SECRET = 'vsbridge/general/jwt_secret';
-
     public function adminAction()
     {
         if($this->getRequest()->getMethod() !== 'POST'){
