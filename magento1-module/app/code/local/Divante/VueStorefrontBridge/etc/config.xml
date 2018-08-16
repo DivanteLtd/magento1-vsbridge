@@ -1,18 +1,13 @@
 <?xml version="1.0"?>
 <config>
-    <default>
-        <auth>
-            <secret>
-                Geiw0qua
-            </secret>
-        </auth>
-    </default>
     <modules>
         <Divante_VueStorefrontBridge>
             <version>1.0.3</version>
         </Divante_VueStorefrontBridge>
     </modules>
-  <frontend>
+    <global>
+    </global>
+    <frontend>
         <routers>
             <vsbridge>
                 <use>standard</use>
@@ -22,7 +17,12 @@
                 </args>
             </vsbridge>
         </routers>
-    </frontend>    
-    <global>
-    </global>
+    </frontend>
+    <default>
+        <vsbridge>
+            <general>
+                <jwt_secret>Geiw0qua</jwt_secret>
+            </general>
+        </vsbridge>
+    </default>
 </config>

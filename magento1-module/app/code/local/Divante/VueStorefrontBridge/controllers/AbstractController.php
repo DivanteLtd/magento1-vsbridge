@@ -17,6 +17,8 @@ function _filterDTO($dtoToFilter, array $blackList = null) {
 }
 class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controller_Front_Action
 {
+    const XML_CONFIG_JWT_SECRET = 'vsbridge/general/jwt_secret';
+
     public function init()
     {
         $this->getResponse()->setHeader('Content-Type', 'application/json');        
@@ -24,7 +26,7 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
 
     protected function _authorize($request) {
         $apikey = $request->getParam('apikey');
-        $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
+        $secretKey = trim(Mage::getStoreConfig(self::XML_CONFIG_JWT_SECRET));
 
         try {
             $tokenData = JWT::decode($apikey, $secretKey, 'HS256');

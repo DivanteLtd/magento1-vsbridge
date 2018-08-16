@@ -35,7 +35,7 @@ cp magento1-module/app/* <MAGENTO_FOLDER>/app/
 
 Magento module uses JWT tokens authorization method based on standard Magento admin users account system. **Please create a dedicated admin account** for magento1-bridge purposes only with minimal access (ACL) to the catalog part.
 
-Then, please setup the JWT "secretToken" by modifying: [`magento1-module/app/etc/modules/Divante_VueStorefrontBridge.xml`](https://github.com/DivanteLtd/magento1-vsbridge/blob/master/magento1-module/app/code/local/Divante/VueStorefrontBridge/etc/config.xml)
+Then, please configure the JWT Secret in Magento configuration: System > Configuration > Services > VueStorefront Bridge.
 
 https://github.com/DivanteLtd/magento1-vsbridge/blob/3f92a6d842e6afb4c7e34e789229848710127b8b/magento1-module/app/code/local/Divante/VueStorefrontBridge/etc/config.xml#L5
 
