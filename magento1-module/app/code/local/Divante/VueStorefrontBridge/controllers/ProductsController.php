@@ -17,17 +17,19 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                 ->addAttributeToSelect('*')
                 ->setPage($params['page'], $params['pageSize']);
 
-            if ($params['type_id']) {
+            if (isset($params['type_id'])) {
                 $productCollection->addFieldToFilter('type_id', $params['type_id']);
             }
 
-            $productCollection->load();
-
             foreach ($productCollection as $product) {
                 $productDTO = $product->getData();
+                $stock = Mage::getModel('cataloginventory/stock_item')->loadByProduct($product);
                 $productDTO['id'] = intval($productDTO['entity_id']);
                 unset($productDTO['entity_id']);
-
+                unset($productDTO['stock_item']);
+                
+                $productDTO['stock'] = $stock->getData();
+                $productDTO['media_gallery'] = $product->getMediaGalleryImages();
                 if ($productDTO['type_id'] !== 'simple') {
                     $configurable = Mage::getModel('catalog/product_type_configurable')->setProduct($product);
                     $childProducts = $configurable->getUsedProductCollection()->addAttributeToSelect('*')->addFilterByRequiredOptions();
@@ -40,7 +42,7 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                         $productAttributeOptions = $product->getTypeInstance(true)->getConfigurableAttributesAsArray($product);
                         $productDTO['configurable_options'] = [];
                         foreach ($productAttributeOptions as $productAttribute) {
-                            if (!$productDTO[$productAttribute['attribute_code'] . '_options'])
+                            if (!isset($productDTO[$productAttribute['attribute_code'] . '_options']))
                                 $productDTO[$productAttribute['attribute_code'] . '_options'] = array();
 
                             $productDTO['configurable_options'][] = $productAttribute;
@@ -58,11 +60,13 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
 
                 $cats = $product->getCategoryIds();
                 $productDTO['category'] = array();
+                $productDTO['category_ids'] = array();
                 foreach ($cats as $category_id) {
                     $cat = Mage::getModel('catalog/category')->load($category_id);
                     $productDTO['category'][] = array(
                         "category_id" => $cat->getId(),
                         "name" => $cat->getName());
+                    $productDTO['category_ids'][] = $category_id;
                 }
 
                 $productDTO = $this->_filterDTO($productDTO);
