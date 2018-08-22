@@ -3,7 +3,6 @@ require_once('AbstractController.php');
 function _prepareDTO($category) {
     $categoryDTO = $category->getData();
     $categoryDTO['id'] = intval($categoryDTO['entity_id']);
-    $categoryDTO['product_count'] = $category->getProductCount();
     unset($categoryDTO['entity_id']);
     unset($categoryDTO['path']);
 
@@ -16,7 +15,7 @@ function _processCategory($category, $level = 0) {
     $catDTO =  _prepareDTO($category);
 
     $catDTO['children_data'] = array();
-    foreach ($childCats as $childCategory) {
+    foreach ($childCats as $childCategory) { 
         $catDTO['children_data'][] = _processCategory($childCategory, $level +  1);
     }
     // $catDTO['level'] = $level;
@@ -33,10 +32,7 @@ class Divante_VueStorefrontBridge_CategoriesController extends Divante_VueStoref
         if ($this->_authorize($this->getRequest())) {
 
             $params = $this->_processParams($this->getRequest());
-            $categories = Mage::getModel('catalog/category')
-                ->getCollection()
-                ->addAttributeToSelect('*')
-                ->setPage($params['page'], $params['pageSize']); //$helper->getStoreCategories();
+            $categories = Mage::getModel('catalog/category')->getCollection()->addAttributeToSelect('*')->setPage($params['page'], $params['pageSize'])->load(); //$helper->getStoreCategories();
 
             $catList = array();
             foreach ($categories as $category) {
