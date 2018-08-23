@@ -27,8 +27,11 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                 $productDTO['id'] = intval($productDTO['entity_id']);
                 unset($productDTO['entity_id']);
                 unset($productDTO['stock_item']);
-                
+
                 $productDTO['stock'] = $stock->getData();
+                if (isset($productDTO['stock']['is_in_stock']) && $productDTO['stock']['is_in_stock'] == 1) {
+                    $productDTO['stock']['is_in_stock'] = true;
+                }
                 $productDTO['media_gallery'] = $product->getMediaGalleryImages();
                 if ($productDTO['type_id'] !== 'simple') {
                     $configurable = Mage::getModel('catalog/product_type_configurable')->setProduct($product);
