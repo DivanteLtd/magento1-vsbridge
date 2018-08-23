@@ -1,5 +1,5 @@
 function putAlias(db, originalName, aliasName, next) {
-    let step2 = () => { 
+    let step2 = () => {
         db.indices.putAlias({ index: originalName, name: aliasName }).then(result=>{
             console.log('Index alias created', result)
         }).then(next).catch(err => {
@@ -16,7 +16,7 @@ function putAlias(db, originalName, aliasName, next) {
     }).catch((err) => {
         console.log('Public index alias does not exists', err.message)
         step2()
-    })      
+    })
 }
 
 function deleteIndex(db, indexName, next) {
@@ -28,7 +28,7 @@ function deleteIndex(db, indexName, next) {
       }).catch(err => {
         console.error(err)
         next(err)
-      })    
+      })
 }
 function reIndex(db, fromIndexName, toIndexName, next) {
     db.reindex({
@@ -47,7 +47,7 @@ function reIndex(db, fromIndexName, toIndexName, next) {
     }).catch(err => {
       console.error(err)
       next(err)
-    })    
+    })
 }
 
 function createIndex(db, indexName, next) {
@@ -79,7 +79,7 @@ function createIndex(db, indexName, next) {
                             console.error(err)
                             next(err)
                         })
-                })        
+                })
     }
 
     return db.indices.deleteAlias({
@@ -91,7 +91,7 @@ function createIndex(db, indexName, next) {
     }).catch((err) => {
         console.log('Public index alias does not exists', err.message)
         step2()
-    })      
+    })
 }
 
 function putMappings(db, indexName, next) {
@@ -101,10 +101,8 @@ function putMappings(db, indexName, next) {
         body: {
             properties: {
                 sku: { type: "keyword" },
-                size: { type: "integer" },
-                size_options: { type: "integer" },
                 price: { type: "float" },
-                has_options: { type: "boolean" },            
+                has_options: { type: "boolean" },
                 special_price: { type: "float" },
                 color: { type: "integer" },
                 color_options: { type: "integer" },
@@ -113,24 +111,24 @@ function putMappings(db, indexName, next) {
                 status: { type: "integer" },
                 weight: { type: "integer" },
                 visibility: { type: "integer" },
-                created_at: { 
-                    type: "date",           
+                created_at: {
+                    type: "date",
                     format: "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
                 },
-                updated_at: { 
-                    type: "date",           
+                updated_at: {
+                    type: "date",
                     format: "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
                 },
                 special_from_date: {
-                    type: "date",           
+                    type: "date",
                     format: "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
                 },
                 special_to_date: {
-                    type: "date",           
+                    type: "date",
                     format: "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
                 },
                 news_from_date: {
-                    type: "date",           
+                    type: "date",
                     format: "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
                 },
                 description: { type: "text" },
@@ -147,15 +145,15 @@ function putMappings(db, indexName, next) {
                         attribute_id: { type: "long" },
                         default_label: { type: "text"},
                         label: { type: "text"},
-                        frontend_label: { type: "text"},   
+                        frontend_label: { type: "text"},
                         store_label: { type: "text"},
                         values: {
                             properties: {
                                 default_label: { type: "text"},
                                 label: { type: "text"},
-                                frontend_label: { type: "text"},                           
+                                frontend_label: { type: "text"},
                                 store_label: { type: "text"},
-                                value_index:  { type: "keyword" }                          
+                                value_index:  { type: "keyword" }
                             }
                         }
                     }
@@ -164,12 +162,22 @@ function putMappings(db, indexName, next) {
                 eco_collection: { type: "integer" },
                 eco_collection_options: { type: "integer" },
                 erin_recommends: { type: "integer" },
-                tax_class_id: { type: "long" }
+                tax_class_id: { type: "long" },
+                stock: {
+                    properties: {
+                        is_in_stock: {
+                            "type": "boolean"
+                        },
+                        qty: {
+                            "type": "long"
+                        }
+                    }
+                }
             }
         }
         }).then(res1 => {
             console.dir(res1, { depth: null, colors: true })
-  
+
             db.indices.putMapping({
                 index: indexName,
                 type: "taxrule",
@@ -185,7 +193,7 @@ function putMappings(db, indexName, next) {
                 }
             }).then(res2 => {
                 console.dir(res2, { depth: null, colors: true })
-  
+
                 db.indices.putMapping({
                     index: indexName,
                     type: "attribute",
@@ -193,10 +201,10 @@ function putMappings(db, indexName, next) {
                     properties: {
                         id: { type: "long" },
                         attribute_id: { type: "long" },
-  
+
                         options: {
                         properties: {
-                            value:  { type: "text", "index" : "not_analyzed" }                          
+                            value:  { type: "text", "index" : "not_analyzed" }
                         }
                         }
                     }
@@ -206,14 +214,14 @@ function putMappings(db, indexName, next) {
                     next()
                 }).catch(err3 => {
                     throw new Error(err3)
-                })                
+                })
             }).catch(err2 => {
                 throw new Error(err2)
             })
         }).catch(err1 => {
             console.error(err1)
             next(err1)
-        })    
+        })
   }
 
   module.exports = {
