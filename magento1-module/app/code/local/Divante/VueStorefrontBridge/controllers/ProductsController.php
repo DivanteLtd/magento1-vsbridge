@@ -6,7 +6,6 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
     public function indexAction()
     {
         if($this->_authorize($this->getRequest())) {
-
             $params = $this->_processParams($this->getRequest());
             $confChildBlacklist = array('entity_id', 'id', 'type_id', 'updated_at', 'created_at', 'stock_item', 'short_description', 'page_layout', 'news_from_date', 'news_to_date', 'meta_description', 'meta_keyword', 'meta_title', 'description', 'attribute_set_id', 'entity_type_id', 'has_options', 'required_options');
 
@@ -29,9 +28,7 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                 unset($productDTO['stock_item']);
 
                 $productDTO['stock'] = $stock->getData();
-                if (isset($productDTO['stock']['is_in_stock']) && $productDTO['stock']['is_in_stock'] == 1) {
-                    $productDTO['stock']['is_in_stock'] = true;
-                }
+                $productDTO['final_price'] = $product->getFinalPrice();
                 $productDTO['media_gallery'] = $product->getMediaGalleryImages();
                 if ($productDTO['type_id'] !== 'simple') {
                     $configurable = Mage::getModel('catalog/product_type_configurable')->setProduct($product);
@@ -80,4 +77,3 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
         }
     }
 }
-?>
