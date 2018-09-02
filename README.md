@@ -53,7 +53,7 @@ This tool required ElasticSearch instance up and running. The simplest way to ha
 Then you need to modify the configs:
 
 ```
-cd node-app/src
+cd node-app
 cp config.example.json config.json
 nano config.json
 ```
@@ -74,10 +74,11 @@ By default Vue Storefront uses ES index named `vue_storefront_catalog`. Please a
 Restart `vue-storefront` and `vue-storefront-api`.
 
 # Available commands
-The bridge works on temporary, versioned ES indexes. You decide when the index should be published (when all data objects are properly set).
+The bridge works on temporary, versioned ES indexes. You decide when the index should be published (when all data objects are properly set). All commands exec from `node-app/src` directory.
 
 Create new version of index (for example: vue_storefront_mangento1_1): 
 ```
+cd node-app/src
 node index.js new
 ```
 
