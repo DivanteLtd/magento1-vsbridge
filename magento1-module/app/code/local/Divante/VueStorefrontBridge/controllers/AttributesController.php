@@ -53,7 +53,7 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
 
                 $productAttrDTO['id']            = intval($productAttr->getAttributeId());
                 $productAttrDTO['options']       = $options;
-                $productAttrDTO['default_value'] = (string)$productAttrDTO['default_value'];
+                $productAttrDTO['default_value'] = (int)$productAttrDTO['default_value'];
                 $productAttrDTO                  = $this->_filterDTO($productAttrDTO);
                 $attrList[]                      = $productAttrDTO;
             }
@@ -64,7 +64,7 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
     /**
      * Prepare attribute data for mappings
      */
-    public function attributeInfoAction()
+    public function productMappingAction()
     {
         if ($this->_authorize($this->getRequest())) {
             $result            = array();

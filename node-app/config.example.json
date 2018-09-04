@@ -16,6 +16,6 @@
         "category_endpoint": "http://dockerized-magento.local/vsbridge/categories/index",
         "taxrule_endpoint": "http://dockerized-magento.local/vsbridge/taxrules/index",
         "attribute_endpoint": "http://dockerized-magento.local/vsbridge/attributes/index",
-        "attribute_data_endpoint": "http://dockerized-magento.local/vsbridge/attributes/attributeInfo"
+        "product_mapping_endpoint": "http://dockerized-magento.local/vsbridge/attributes/productMapping"
     }
 }

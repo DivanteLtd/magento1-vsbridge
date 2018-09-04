@@ -179,6 +179,7 @@ async function putMappings(db, indexName, next, token) {
                             properties: {
                                 id: { type: "long" },
                                 attribute_id: { type: "long" },
+                                default_value: {type: "integer"},
                                 options: {
                                     properties: {
                                         value:  { type: "text", "index" : "not_analyzed" }
@@ -209,7 +210,7 @@ function getAttributeData(token) {
     let promise = new Promise((resolve, reject) => {
         console.log('*** Getting attribute data')
         api.authWith(token);
-        api.get(config.vsbridge['attribute_data_endpoint']).type('json').end((resp) => {
+        api.get(config.vsbridge['product_mapping_endpoint']).type('json').end((resp) => {
             if (resp.body && resp.body.code !== 200) { // unauthroized request
                 console.log(resp.body.result);
                 process.exit(-1)
