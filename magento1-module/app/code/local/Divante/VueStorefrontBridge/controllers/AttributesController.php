@@ -1,6 +1,17 @@
 <?php
+
 require_once('AbstractController.php');
 
+/**
+ * Divante VueStorefrontBridge AttributesController Class
+ *
+ * @category    Divante
+ * @package     VueStorefrontBridge
+ * @author      Piotr Karwatka <pkarwatka@divante.co>
+ * @author      Dariusz Oliwa <doliwa@divante.co>
+ * @copyright   Copyright (C) 2018
+ * @license     MIT License
+ */
 class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStorefrontBridge_AbstractController
 {
     const ES_DATA_TYPE_STRING  = 'text';
@@ -26,26 +37,26 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
         'static'    => self::ES_DATA_TYPE_STRING,
     );
 
+
+    /**
+     * index action
+     */
     public function indexAction()
     {
         if ($this->_authorize($this->getRequest())) {
-            $attrList     = array();
             $params       = $this->_processParams($this->getRequest());
             $productAttrs = Mage::getResourceModel('catalog/product_attribute_collection');
-
+            $attrList     = [];
             foreach ($productAttrs as $productAttr) {
-                $options        = array();
-                $productAttrDTO = $productAttr->getData();
                 /** @var Mage_Catalog_Model_Resource_Eav_Attribute $productAttr */
                 $attribute = Mage::getSingleton('eav/config')
-                    ->getAttribute(
-                        Mage_Catalog_Model_Product::ENTITY,
-                        $productAttr->getAttributeCode()
-                    );
-
+                    ->getAttribute(Mage_Catalog_Model_Product::ENTITY, $productAttr->getAttributeCode());
+                $options   = [];
                 if ($attribute->usesSource()) {
                     $options = $attribute->getSource()->getAllOptions(false);
                 }
+
+                $productAttrDTO = $productAttr->getData();
 
                 if (in_array($productAttrDTO['source_model'], array('core/design_source_design'))) {
                     continue;
@@ -71,7 +82,7 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
             $attributeMapping  = array();
             $productAttributes = Mage::getResourceModel('catalog/product_attribute_collection');
             foreach ($productAttributes as $productAttribute) {
-                /** @var Mage_Catalog_Model_Resource_Eav_Attribute $productAttr */
+                /** @var Mage_Catalog_Model_Resource_Eav_Attribute $productAttribute */
                 $attribute = Mage::getSingleton('eav/config')
                     ->getAttribute(
                         Mage_Catalog_Model_Product::ENTITY,

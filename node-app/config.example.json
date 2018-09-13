@@ -5,7 +5,7 @@
     },
     "vsbridge": {
         "url": "http://dockerized-magento.local:80/",
-        "apKey": "test",
+        "apiKey": "test",
         "auth": {
             "username": "admin",
             "password": "password123",
