@@ -77,7 +77,7 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                         $productDTO['configurable_options'] = [];
 
                         foreach ($productAttributeOptions as $productAttribute) {
-                            if (!$productDTO[$productAttribute['attribute_code'] . '_options']) {
+                            if (!isset($productDTO[$productAttribute['attribute_code'] . '_options'])) {
                                 $productDTO[$productAttribute['attribute_code'] . '_options'] = [];
                             }
 
