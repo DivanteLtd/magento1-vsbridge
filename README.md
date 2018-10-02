@@ -91,12 +91,12 @@ node index.js products
 node index.js cms
 ```
 
-Please note that if you want import/update data only for cms pages/blocks/hierarchy you can use this commads:
+Please note that if you want import / update data only for cms pages / blocks / hierarchy you can use this commads:
 ```
-node index.js cms --pages (import/update only cms page data)
-node index.js cms --blocks (import/update only cms block data)
-node index.js cms --hierarchy (import/update only cms hierarchy data)
-node index.js cms (import all instances at once)
+node index.js cms --pages (import / update only cms page data)
+node index.js cms --blocks (import / update only cms block data)
+node index.js cms --hierarchy (import / update only cms hierarchy data)
+node index.js cms (without any params import all instances at once)
 ```
 
 Publish new version of index (creates an alias with prod. name of the index: vue_storefront_magento1_1 -> vue_storefront_magento1):
