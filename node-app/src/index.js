@@ -32,7 +32,7 @@ const cli = CommandRouter()
 
 cli.option({ name: 'page'
 , alias: 'p'
-, default: 0
+, default: 1
 , type: Number
 })
 cli.option({ name: 'pageSize'
@@ -274,6 +274,21 @@ cli.command('categories',  () => {
     })
 });
 
+cli.command('cms',  () => {
+    showWelcomeMsg()
+    if (cli.options.pages) {
+        importCmsPages()
+    } else if (cli.options.blocks) {
+        importCmsBlocks()
+    } else if (cli.options.hierarchy) {
+        importCmsHierarchy()
+    } else {
+        importCmsPages()
+        importCmsBlocks()
+        importCmsHierarchy()
+    }
+});
+
 cli.command('new',  () => {
     showWelcomeMsg()
     recreateTempIndex()
@@ -307,6 +322,48 @@ authUser((authResp) => {
   AUTH_TOKEN = authResp.result
   cli.parse(process.argv);
 })
+
+function importCmsPages() {
+    importListOf(
+        'cms_page',
+        new BasicImporter('cms_page', config, api, page = cli.options.page, pageSize = cli.options.pageSize),
+        config,
+        api,
+        page = cli.options.page,
+        pageSize = cli.options.pageSize
+    ).then((result) => {
+    }).catch(err => {
+        console.error(err)
+    })
+}
+
+function importCmsBlocks() {
+    importListOf(
+        'cms_block',
+        new BasicImporter('cms_block', config, api, page = cli.options.page, pageSize = cli.options.pageSize),
+        config,
+        api,
+        page = cli.options.page,
+        pageSize = cli.options.pageSize
+    ).then((result) => {
+    }).catch(err => {
+        console.error(err)
+    })
+}
+
+function importCmsHierarchy() {
+    importListOf(
+        'cms_hierarchy',
+        new BasicImporter('cms_hierarchy', config, api, page = cli.options.page, pageSize = cli.options.pageSize),
+        config,
+        api,
+        page = cli.options.page,
+        pageSize = cli.options.pageSize
+    ).then((result) => {
+    }).catch(err => {
+        console.error(err)
+    })
+}
 
 // Using a single function to handle multiple signals
 function handle(signal) {

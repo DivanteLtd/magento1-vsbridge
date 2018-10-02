@@ -16,6 +16,9 @@
         "category_endpoint": "http://dockerized-magento.local/vsbridge/categories/index",
         "taxrule_endpoint": "http://dockerized-magento.local/vsbridge/taxrules/index",
         "attribute_endpoint": "http://dockerized-magento.local/vsbridge/attributes/index",
-        "product_mapping_endpoint": "http://dockerized-magento.local/vsbridge/attributes/productMapping"
+        "product_mapping_endpoint": "http://dockerized-magento.local/vsbridge/attributes/productMapping",
+        "cms_page_endpoint": "http://dockerized-magento.local/vsbridge/cms_page/index",
+        "cms_block_endpoint": "http://dockerized-magento.local/vsbridge/cms_block/index",
+        "cms_hierarchy_endpoint": "http://dockerized-magento.local/vsbridge/cms_hierarchy/index"
     }
 }
