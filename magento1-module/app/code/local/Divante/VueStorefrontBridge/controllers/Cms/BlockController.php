@@ -58,9 +58,12 @@ class Divante_VueStorefrontBridge_Cms_BlockController extends Divante_VueStorefr
     {
         $blocks     = [];
         $helper     = $this->_getCmsHelper();
+        $store      = Mage::app()->getDefaultStoreView();
         $collection = Mage::getModel('cms/block')
             ->getCollection()
             ->addFieldToSelect($this->_cmsBlockData)
+            ->addStoreFilter($store)
+            ->addFieldToFilter('is_active', 1)
             ->setCurPage($params['page'])
             ->setPageSize($params['pageSize']);
 
@@ -71,7 +74,9 @@ class Divante_VueStorefrontBridge_Cms_BlockController extends Divante_VueStorefr
             $blocks[$i]             = $block->getData();
             $blocks[$i]['id']       = $id;
             $blocks[$i]['content']  = $content;
-            $blocks[$i]['store_id'] = $block->getResource()->lookupStoreIds($id);
+            $blocks[$i]['store_id'] = $store->getId();
+            // Comment due to we don't use multi stores
+            //blocks[$i]['store_id'] = $block->getResource()->lookupStoreIds($id);
             $i++;
         }
 

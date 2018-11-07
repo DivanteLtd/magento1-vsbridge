@@ -61,9 +61,12 @@ class Divante_VueStorefrontBridge_Cms_PageController extends Divante_VueStorefro
     {
         $pages      = [];
         $helper     = $this->_getCmsHelper();
+        $store      = Mage::app()->getDefaultStoreView();
         $collection = Mage::getModel('cms/page')
             ->getCollection()
             ->addFieldToSelect($this->_cmsPageData)
+            ->addStoreFilter($store)
+            ->addFieldToFilter('is_active', 1)
             ->setCurPage($params['page'])
             ->setPageSize($params['pageSize']);
 
@@ -74,7 +77,9 @@ class Divante_VueStorefrontBridge_Cms_PageController extends Divante_VueStorefro
             $pages[$i]             = $page->getData();
             $pages[$i]['id']       = $id;
             $pages[$i]['content']  = $content;
-            $pages[$i]['store_id'] = $page->getResource()->lookupStoreIds($id);
+            $pages[$i]['store_id'] = $store->getId();
+            // Comment due to we don't use multi stores
+            //$pages[$i]['store_id'] = $page->getResource()->lookupStoreIds($id);
             $i++;
         }
 
