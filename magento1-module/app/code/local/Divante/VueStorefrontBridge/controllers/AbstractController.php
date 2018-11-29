@@ -126,4 +126,15 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
             )
         )->setHttpResponseCode($code)->setHeader('Content-Type', 'application/json');
     }
+
+    /**
+     * Check if the version of Magento currently being rune is Enterprise Edition
+     *
+     * @return bool
+     */
+    protected function _isMageEnterprise()
+    {
+        return Mage::getConfig()->getModuleConfig('Enterprise_Enterprise')
+            && Mage::getConfig()->getModuleConfig('Enterprise_Cms');
+    }
 }

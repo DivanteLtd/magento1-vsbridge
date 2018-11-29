@@ -1,5 +1,5 @@
 # Vue Storefront support for Magento 1.9
-This projects enables You to use Magento 1.9 as a backend platform for [Vue Storefront - first Progressive Web App for e-Commerce](https://github.com/DivanteLtd/vue-storefront). 
+This projects enables You to use Magento 1.9 as a backend platform for [Vue Storefront - first Progressive Web App for e-Commerce](https://github.com/DivanteLtd/vue-storefront).
 
 [![Home page of Magento1 demo](doc/media/magento1-hp.png)](https://demo-magento1.vuestorefront.io)
 
@@ -76,7 +76,7 @@ Restart `vue-storefront` and `vue-storefront-api`.
 # Available commands
 The bridge works on temporary, versioned ES indexes. You decide when the index should be published (when all data objects are properly set). All commands exec from `node-app/src` directory.
 
-Create new version of index (for example: vue_storefront_magento1_1): 
+Create new version of index (for example: vue_storefront_magento1_1):
 ```
 cd node-app/src
 node index.js new
@@ -88,9 +88,18 @@ node index.js attributes
 node index.js taxrules
 node index.js categories
 node index.js products
+node index.js cms
 ```
 
-Publish new version of index (creates an alias with prod. name of the index: vue_storefront_magento1_1 -> vue_storefront_magento1): 
+Please note that if you want import / update data only for cms pages / blocks / hierarchy you can use this commads:
+```
+node index.js cms --pages (import / update only cms page data)
+node index.js cms --blocks (import / update only cms block data)
+node index.js cms --hierarchy (import / update only cms hierarchy data)
+node index.js cms (without any params import all instances at once)
+```
+
+Publish new version of index (creates an alias with prod. name of the index: vue_storefront_magento1_1 -> vue_storefront_magento1):
 ```
 node index.js publish
 ```
@@ -114,6 +123,6 @@ Some ideas for contributions:
 - media gallery sync,
 - shopping cart / order sync (please [contact us for details](contributors@vuestorefront.io)).
 
-# License 
+# License
 `magento1-vsbridge` source code is completely free and released under the [MIT License](https://github.com/DivanteLtd/vue-storefront/blob/master/LICENSE).
 
