@@ -92,7 +92,11 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
         try {
             $tokenData = JWT::decode($token, $secretKey, 'HS256');
             if($tokenData->id > 0){
-                return Mage::getModel('customer/customer')->load($tokenData->id);
+                $customer = Mage::getModel('customer/customer')->load($tokenData->id);
+
+                if ($customer->getId()) {
+                    return $customer;
+                }
             }  else {
                 return null;
             }

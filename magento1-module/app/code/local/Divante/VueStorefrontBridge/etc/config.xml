@@ -24,5 +24,10 @@
         </routers>
     </frontend>    
     <global>
+        <models>
+            <vsbridge>
+                <class>Divante_VueStorefrontBridge_Model</class>
+            </vsbridge>
+        </models>
     </global>
 </config>
