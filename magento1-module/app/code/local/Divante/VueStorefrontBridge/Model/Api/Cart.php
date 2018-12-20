@@ -104,14 +104,16 @@ class Divante_VueStorefrontBridge_Model_Api_Cart
             'qty' => max(1, $qty),
         ];
 
-        $productOption = (array)$cartItem->product_option->extension_attributes;
+        if (isset($cartItem->product_option) && isset($cartItem->product_option->extension_attributes)) {
+            $productOption = (array)$cartItem->product_option->extension_attributes;
 
-        if (!empty($productOption['configurable_item_options'])) {
-            $options = $productOption['configurable_item_options'];
+            if (!empty($productOption['configurable_item_options'])) {
+                $options = $productOption['configurable_item_options'];
 
-            foreach ($options as $option) {
-                $option = (array)$option;
-                $params['super_attribute'][$option['option_id']] = $option['option_value'];
+                foreach ($options as $option) {
+                    $option = (array)$option;
+                    $params['super_attribute'][$option['option_id']] = $option['option_value'];
+                }
             }
         }
 

@@ -49,11 +49,16 @@ class Divante_VueStorefrontBridge_Model_Api_Order_Create
         $shippingAddress = (array)$requestPayload->addressInformation->shippingAddress;
 
         // Add billing address to quote
+        /** @var Mage_Sales_Model_Quote_Address $billingAddressData */
         $billingAddressData = $this->quote->getBillingAddress()->addData($billingAddress);
+        $billingAddressData->implodeStreetAddress();
         $this->quote->setCustomerEmail($billingAddressData->getEmail());
+        $this->quote->setCustomerFirstname($billingAddressData->getFirstname());
+        $this->quote->setCustomerLastname($billingAddressData->getLastname());
 
         // Add shipping address to quote
         $shippingAddressData = $this->quote->getShippingAddress()->addData($shippingAddress);
+        $shippingAddressData->implodeStreetAddress();
         $shippingMethodCode = $requestPayload->addressInformation->shipping_method_code;
         $paymentMethodCode = $requestPayload->addressInformation->payment_method_code;
         $shippingMethodCarrier = $requestPayload->addressInformation->shipping_carrier_code;
@@ -89,6 +94,7 @@ class Divante_VueStorefrontBridge_Model_Api_Order_Create
         if ($order) {
             $order->queueNewOrderEmail();
             $this->quote->save();
+            Mage::getModel('sales/order')->getResource()->updateGridRecords($order->getId());
         }
 
         return $order;
@@ -112,8 +118,17 @@ class Divante_VueStorefrontBridge_Model_Api_Order_Create
                 }
             } else {
                 $cartItem = new stdClass();
-                $cartItem->product_option = $product->product_option;
-                $cartItem->qty = $product->qty;
+
+                if (isset($product->product_option)) {
+                    $cartItem->product_option = $product->product_option;
+                }
+
+                if (isset($product->qty)) {
+                    $cartItem->qty = max($product->qty, 1);
+                } else {
+                    $cartItem->qty = 1;
+                }
+
                 $cartItem->sku = $product->sku;
 
                 $this->addProductToQuote($cartItem);
