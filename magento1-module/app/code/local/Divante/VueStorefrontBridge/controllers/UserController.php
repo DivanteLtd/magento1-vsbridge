@@ -145,41 +145,69 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
         }
     }
 
-    public function orderHistoryAction() {
+    public function orderHistoryAction()
+    {
         if (!$this->_checkHttpMethod('GET')) {
             return $this->_result(500, 'Only GET method allowed');
-        } else {
-            $customer = $this->_currentCustomer($this->getRequest());
+        }
 
-            if ($customer) {
-                $request = $this->getRequest();
-                $page = max(abs(intval($request->getParam('page'))), 1);
-                $pageSize = min(abs(intval($request->getParam('pageSize'))), 50);
-                
-                $collection = Mage::getModel("sales/order")->getCollection()
-                            ->addAttributeToSelect('*')
-                            /*->addFieldToFilter('customer_id', $customer->getId())*/->setPageSize($pageSize)->setCurPage($page);
-                
-                $ordersDTO = array();
-                foreach ($collection as $order) {
-                    $orderDTO = $order->getData();
-                    $orderDTO['id'] = $orderDTO['entity_id'];
-                    $orderDTO['items'] = array();
+        $customer = $this->_currentCustomer($this->getRequest());
 
-                    foreach($order->getAllItems() as $item) {
-                        $itemDTO = $item->getData();
-                        $itemDTO['id'] = $itemDTO['item_id'];
-                        $orderDTO['items'][] = $itemDTO;
+        if ($customer) {
+            $request = $this->getRequest();
+            $page = max(abs(intval($request->getParam('page', 1))), 1);
+            $pageSize = min(abs(intval($request->getParam('pageSize', 50))), 50);
+
+            /** @var Mage_Sales_Model_Resource_Order_Collection $orderCollection */
+            $orderCollection = Mage::getResourceModel('sales/order_collection');
+            $orderCollection
+                ->addFieldToSelect('*')
+                ->setPageSize($pageSize)->setCurPage($page)
+                ->addFieldToFilter('customer_id', $customer->getId())
+                ->addFieldToFilter(
+                    'state',
+                    ['in' => Mage::getSingleton('sales/order_config')->getVisibleOnFrontStates()]
+                )
+                ->setOrder('created_at', 'desc');
+
+            $ordersDTO = [];
+            /** @var Mage_Catalog_Model_Resource_Product $resourceModel */
+            $resourceModel = Mage::getResourceModel('catalog/product');
+            
+            /** @var Mage_Sales_Model_Order $order */
+            foreach ($orderCollection as $order) {
+                $orderDTO = $order->getData();
+                $orderDTO['id'] = $orderDTO['entity_id'];
+                $orderDTO['items'] = [];
+
+                foreach($order->getAllVisibleItems() as $item) {
+                    $itemDTO = $item->getData();
+                    $itemDTO['id'] = $itemDTO['item_id'];
+                    $itemDTO['thumbnail'] = null;
+
+                    $image = $resourceModel->getAttributeRawValue(
+                        $item->getProductId(),
+                        'thumbnail',
+                        $order->getStoreId()
+                    );
+
+                    if ($image) {
+                        $itemDTO['thumbnail'] = $image;
                     }
 
-                    $ordersDTO[] = $orderDTO;
+                    $orderDTO['items'][] = $itemDTO;
                 }
-                return $this->_result(200, array('items' => $ordersDTO));
-            } else {
-                return $this->_result(500, 'User is not authroized to access self');                
+
+                $payment = $order->getPayment();
+                $orderDTO['payment'] = $payment->toArray();
+                $orderDTO['payment']['method_title'] = $payment->getMethodInstance()->getTitle();
+                $ordersDTO[] = $orderDTO;
             }
 
+            return $this->_result(200, array('items' => $ordersDTO));
         }
+
+        return $this->_result(500, 'User is not authroized to access self');
     }
 
     /**
@@ -284,8 +312,10 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     }
                 }
                 $customer->load($customer->getId());
-                
                 $customerDTO = $customer->getData();
+                $subscription = Mage::getModel('newsletter/subscriber')->loadByCustomer($customer);
+                $customerDTO['is_subscribed'] = $subscription->isSubscribed();
+
                 $allAddress = $customer->getAddresses();
                 $defaultBilling  = $customer->getDefaultBilling();
                 $defaultShipping = $customer->getDefaultShipping();

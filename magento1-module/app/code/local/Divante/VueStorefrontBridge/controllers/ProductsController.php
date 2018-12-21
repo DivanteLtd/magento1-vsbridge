@@ -17,7 +17,7 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                 ->addAttributeToSelect('*')
                 ->setPage($params['page'], $params['pageSize']);
 
-            if ($params['type_id']) {
+            if (isset($params['type_id']) && $params['type_id']) {
                 $productCollection->addFieldToFilter('type_id', $params['type_id']);
             }
 
@@ -40,7 +40,7 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                         $productAttributeOptions = $product->getTypeInstance(true)->getConfigurableAttributesAsArray($product);
                         $productDTO['configurable_options'] = [];
                         foreach ($productAttributeOptions as $productAttribute) {
-                            if (!$productDTO[$productAttribute['attribute_code'] . '_options'])
+                            if (!isset($productDTO[$productAttribute['attribute_code'] . '_options']))
                                 $productDTO[$productAttribute['attribute_code'] . '_options'] = array();
 
                             $productDTO['configurable_options'][] = $productAttribute;
