@@ -76,6 +76,8 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
                 $quoteObj->setStoreId($store->getId()); // TODO: return existing user cart id if exists
                 $quoteObj->collectTotals();
                 $quoteObj->setIsActive(true);
+                $quoteObj->getBillingAddress();
+                $quoteObj->getShippingAddress();
                 $quoteObj->save();
             }
 

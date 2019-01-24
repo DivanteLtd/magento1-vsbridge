@@ -32,7 +32,6 @@ class Divante_VueStorefrontBridge_Model_Api_Cart
      */
     public function saveQuote(Mage_Sales_Model_Quote $quote)
     {
-        $quote->getBillingAddress();
         $quote->getShippingAddress()->setCollectShippingRates(true);
         $quote->collectTotals();
         $quote->save();
