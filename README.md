@@ -76,6 +76,8 @@ Restart `vue-storefront` and `vue-storefront-api`.
 # Available commands
 The bridge works on temporary, versioned ES indexes. You decide when the index should be published (when all data objects are properly set). All commands exec from `node-app/src` directory.
 
+**Note:** We're offering a native, Magento1 data indexer that's a Magento1 module - instead of node.js app. Please check out [magento1-vsbridge-indexer](https://github.com/DivanteLtd/magento1-vsbridge-indexer) for details!
+
 Create new version of index (for example: vue_storefront_magento1_1):
 ```
 cd node-app/src
