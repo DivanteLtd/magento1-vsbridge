@@ -36,7 +36,7 @@ class Divante_VueStorefrontBridge_OrderController extends Divante_VueStorefrontB
     /**
      * Place order for user
      */
-    public function placeOrderAction()
+    public function createAction()
     {
         if (!$this->_checkHttpMethod('POST')) {
             return $this->_result(500, 'Only POST method allowed');
@@ -66,11 +66,14 @@ class Divante_VueStorefrontBridge_OrderController extends Divante_VueStorefrontB
             return $this->_result(500, sprintf('No such entity with id %s', $request->cart_id));
         }
 
-        try {
+        if (!$quoteObj->getReservedOrderId()) {
+            $quoteObj->reserveOrderId()->save();
+        }
 
+        try {
             /** @var Divante_VueStorefrontBridge_Model_Api_Order_Create $apiOrderService */
             $apiOrderService = Mage::getModel('vsbridge/api_order_create', $quoteObj);
-            $order = $apiOrderService->create($request);
+            $order = $apiOrderService->execute($request);
 
             return $this->_result(200, $order->getId());
         } catch (\Exception $e) {

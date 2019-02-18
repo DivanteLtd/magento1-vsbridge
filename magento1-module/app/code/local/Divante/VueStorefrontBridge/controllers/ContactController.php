@@ -82,7 +82,7 @@ class Divante_VueStorefrontBridge_ContactController extends Divante_VueStorefron
                 $error = true;
             }
 
-            if (!Zend_Validate::is(trim($formData->message), 'NotEmpty')) {
+            if (!Zend_Validate::is(trim($formData->comment), 'NotEmpty')) {
                 $error = true;
             }
 
@@ -107,7 +107,9 @@ class Divante_VueStorefrontBridge_ContactController extends Divante_VueStorefron
                 );
 
             if (!$mailTemplate->getSentSuccess()) {
-                throw new Exception();
+                throw new Exception(
+                    Mage::helper('contacts')->__('Unable to submit your request. Please, try again later')
+                );
             }
 
             $translate->setTranslateInline(true);

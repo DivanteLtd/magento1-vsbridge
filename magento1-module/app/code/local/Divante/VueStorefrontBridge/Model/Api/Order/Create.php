@@ -32,12 +32,13 @@ class Divante_VueStorefrontBridge_Model_Api_Order_Create
     }
 
     /**
+     * Only Guest Order are supported for now
      * @param $requestPayload
      *
      * @return Mage_Sales_Model_Order
      * @throws Mage_Core_Exception
      */
-    public function create($requestPayload)
+    public function execute($requestPayload)
     {
         if (is_null($this->quote)) {
             Mage::throwException('No quote entity passed to order create model');
@@ -52,6 +53,7 @@ class Divante_VueStorefrontBridge_Model_Api_Order_Create
         /** @var Mage_Sales_Model_Quote_Address $billingAddressData */
         $billingAddressData = $this->quote->getBillingAddress()->addData($billingAddress);
         $billingAddressData->implodeStreetAddress();
+        $this->quote->setCustomerIsGuest(true);
         $this->quote->setCustomerEmail($billingAddressData->getEmail());
         $this->quote->setCustomerFirstname($billingAddressData->getFirstname());
         $this->quote->setCustomerLastname($billingAddressData->getLastname());

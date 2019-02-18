@@ -81,7 +81,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
                 $quoteObj->save();
             }
 
-            $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
+            $secretKey = $this->getSecretKey();
 
             return $this->_result(
                 200,

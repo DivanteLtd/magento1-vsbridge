@@ -22,6 +22,19 @@ class Divante_VueStorefrontBridge_Model_Api_Request
     private $errorMessage;
 
     /**
+     * @var Divante_VueStorefrontBridge_Model_Config
+     */
+    private $configSettings;
+
+    /**
+     * Divante_VueStorefrontBridge_Model_Api_Request constructor.
+     */
+    public function __construct()
+    {
+        $this->configSettings = Mage::getSingleton('vsbridge/config');
+    }
+
+    /**
      * @param $request
      *
      * @return bool
@@ -68,21 +81,33 @@ class Divante_VueStorefrontBridge_Model_Api_Request
     public function currentCustomer($request)
     {
         $token = $request->getParam('token');
-        $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
+        $secretKey = $this->configSettings->getSecretKey();
 
         try {
             $tokenData = JWT::decode($token, $secretKey, 'HS256');
 
             if ($tokenData->id > 0){
-                return Mage::getModel('customer/customer')->load($tokenData->id);
+                $customer = Mage::getModel('customer/customer')->load($tokenData->id);
+
+                if ($customer->getId()) {
+                    return $customer;
+                }
             }
 
             return null;
         } catch (Exception $err) {
-            Mage::logException($err);
+            return null;
         }
 
         return null;
+    }
+
+    /**
+     * @return string
+     */
+    private function getSecretKey()
+    {
+        return $this->configSettings->getSecretKey();
     }
 
     /**
@@ -98,7 +123,7 @@ class Divante_VueStorefrontBridge_Model_Api_Request
             if (intval(($cartId)) > 0) {
                 $this->quote = Mage::getModel('sales/quote')->load($cartId);
             } elseif ($cartId) {
-                $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
+                $secretKey = $this->getSecretKey();
                 $tokenData = JWT::decode($cartId, $secretKey, 'HS256');
                 $this->quote =  Mage::getModel('sales/quote')->load($tokenData->cartId);
             }

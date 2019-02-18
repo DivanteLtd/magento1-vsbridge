@@ -1,18 +1,11 @@
 <?xml version="1.0"?>
 <config>
-    <default>
-        <auth>
-            <secret>
-                Phaebah0
-            </secret>
-        </auth>
-    </default>
     <modules>
         <Divante_VueStorefrontBridge>
             <version>1.0.3</version>
         </Divante_VueStorefrontBridge>
     </modules>
-  <frontend>
+    <frontend>
         <routers>
             <vsbridge>
                 <use>standard</use>
@@ -22,12 +15,25 @@
                 </args>
             </vsbridge>
         </routers>
-    </frontend>    
+    </frontend>
     <global>
         <models>
             <vsbridge>
                 <class>Divante_VueStorefrontBridge_Model</class>
             </vsbridge>
         </models>
+        <helpers>
+            <vsbridge>
+                <class>Divante_VueStorefrontBridge_Helper</class>
+            </vsbridge>
+        </helpers>
     </global>
+    <default>
+        <vuestorefrontbridge>
+            <general>
+                <jwt_secret>Phaebah0</jwt_secret>
+                <max_page_size>20</max_page_size>
+            </general>
+        </vuestorefrontbridge>
+    </default>
 </config>

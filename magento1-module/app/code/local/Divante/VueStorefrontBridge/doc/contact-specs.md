@@ -15,7 +15,8 @@ This method is used to submit user inquiry
     "checker": null,
     "name": "User Name",
     "email": "test@test.com",
-    "message": "Text"
+    "comment": "Text",
+    "telephone": ""
   }
 }
 ```
