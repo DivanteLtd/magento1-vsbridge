@@ -123,7 +123,7 @@ Please feel free to extend Magento module or Node app and contribute Your change
 
 Some ideas for contributions:
 - media gallery sync,
-- shopping cart / order sync (please [contact us for details](contributors@vuestorefront.io)).
+- shopping cart / order sync (please [contact us for details](mailto:contributors@vuestorefront.io)).
 
 # License
 `magento1-vsbridge` source code is completely free and released under the [MIT License](https://github.com/DivanteLtd/vue-storefront/blob/master/LICENSE).
