@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<config>
+    <sections>
+        <vuestorefrontbridge translate="label" module="oauth">
+            <label>VueStorefront Bridge</label>
+            <tab>advanced</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>1000</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+            <groups>
+                <general translate="label">
+                    <label>General</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>300</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <jwt_secret translate="label">
+                            <label>JWT Secret</label>
+                            <frontend_type>text</frontend_type>
+                            <comment>JSON Web Token secret for VueStorefront Bridge</comment>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </jwt_secret>
+                        <max_page_size translate="label">
+                            <label>Maximum Page Size</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </max_page_size>
+                    </fields>
+                </general>
+            </groups>
+        </vuestorefrontbridge>
+    </sections>
+</config>

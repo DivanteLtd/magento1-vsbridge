@@ -23,7 +23,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                         return $this->_result(500, 'No username or password given!');
                     } else {
                         $session = Mage::getSingleton( 'customer/session' );
-                        $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
+                        $secretKey = $this->getSecretKey();
 
                         if($session->login($request->username, $request->password)) {
                             $user = $session->getCustomer();
@@ -51,28 +51,41 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
      * Send password reset link
      * https://github.com/DivanteLtd/magento1-vsbridge/blob/master/doc/VueStorefrontBridge%20API%20specs.md#post-vsbridgeuserresetpassword
      */
-    public function resetPasswordAction() {
+    public function resetPasswordAction()
+    {
         if (!$this->_checkHttpMethod('POST')) {
             return $this->_result(500, 'Only POST method allowed');
-        } else {
-            $request = $this->_getJsonBody();
-            if(!$request || !$request->email) {
-                return $this->_result(500, 'No e-mail provided');
-            } else {
-                try {
-                    $customer = Mage::getModel('customer/customer')
-                    ->setWebsiteId(Mage::app()->getStore()->getWebsiteId())
-                    ->loadByEmail($$request->email);
-                    if ($customer)
-                        $customer->sendPasswordResetConfirmationEmail();                
-                    else {
-                        return $this->_result(500, 'Wrong e-mail provided');
-                    }
-                } catch (Exception $err) {
-                    return $this->_result(500, $err->getMessage());
-                }
+        }
+
+        $request = $this->_getJsonBody();
+
+        if (!$request || !$request->email) {
+            return $this->_result(500, 'No e-mail provided');
+        }
+
+        /** @var  $helper */
+        $helper = Mage::helper('adika_vsbridge');
+
+        try {
+            $customer = Mage::getModel('customer/customer')
+                ->setWebsiteId(Mage::app()->getStore()->getWebsiteId())
+                ->loadByEmail($request->email);
+
+            if ($customer->getId()) {
+                $customer->sendPasswordResetConfirmationEmail();
+
+                return $this->_result(
+                    200,
+                    $helper->__(
+                        'If there is an account associated with %s you will receive an email with a link to reset your password.',
+                        $helper->escapeHtml($request->email)
+                    )
+                );
             }
 
+            return $this->_result(500, 'Wrong e-mail provided');
+        } catch (Exception $err) {
+            return $this->_result(500, $err->getMessage());
         }
     }
 
@@ -119,7 +132,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 if(!$request || !$request->refreshToken) {
                     return $this->_result(500, 'No request token provided');
                 } else  {
-                    $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
+                    $secretKey = $this->getSecretKey();
                     $loginRequest = JWT::decode($request->refreshToken, $secretKey, 'HS256');
                     if(!$loginRequest || !$loginRequest->username || !$loginRequest->password) {
                         return $this->_result(500, 'Invalid token or no username password pair');
@@ -218,41 +231,36 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
     {
         if (!$this->_checkHttpMethod('POST')) {
             return $this->_result(500, 'Only POST method allowed');
-        } else {
+        }
 
-            $request = $this->_getJsonBody();
+        $request = $this->_getJsonBody();
 
-            if (!$request) {
-                return $this->_result(500, 'No JSON object found in the request body');
-            } else {
-                if ((!$request->customer || !$request->customer->email) || !$request->password) {
-                    return $this->_result(500, 'No customer data or password provided!');
-                } else {
+        if (!$request) {
+            return $this->_result(500, 'No JSON object found in the request body');
+        }
 
+        if ((!$request->customer || !$request->customer->email) || !$request->password) {
+            return $this->_result(500, 'No customer data or password provided!');
+        }
 
-                    $websiteId = Mage::app()->getWebsite()->getId();
-                    $store = Mage::app()->getStore();
+        $websiteId = Mage::app()->getWebsite()->getId();
+        $store = Mage::app()->getStore();
 
-                    $customer = Mage::getModel("customer/customer");
-                    $customer   ->setWebsiteId($websiteId)
-                        ->setStore($store)
-                        ->setFirstname($request->customer->firstname)
-                        ->setLastname($request->customer->lastname)
-                        ->setEmail($request->customer->email)
-                        ->setPassword($request->password);
+        $customer = Mage::getModel("customer/customer");
+        $customer   ->setWebsiteId($websiteId)
+            ->setStore($store)
+            ->setFirstname($request->customer->firstname)
+            ->setLastname($request->customer->lastname)
+            ->setEmail($request->customer->email)
+            ->setPassword($request->password);
 
-                    try{
-                        $customer->save();
-                        $filteredCustomerData = $this->_filterDTO($customer->getData(), array('password', 'password_hash', 'password_confirmation', 'confirmation', 'entity_type_id'));
-                        return $this->_result(200, $filteredCustomerData); // TODO: add support for 'Refresh-token'
-                    }
-                    catch (Exception $e) {
-                        return $this->_result(500, $e->getMessage());
-                    }
+        try{
+            $customer->save();
+            $filteredCustomerData = $this->_filterDTO($customer->getData(), array('password', 'password_hash', 'password_confirmation', 'confirmation', 'entity_type_id'));
 
-                }
-            }
-
+            return $this->_result(200, $filteredCustomerData); // TODO: add support for 'Refresh-token'
+        } catch (Exception $e) {
+            return $this->_result(500, $e->getMessage());
         }
     }
 
@@ -261,7 +269,10 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
         $customer = $this->_currentCustomer($this->getRequest());
         if(!$customer) {
             return $this->_result(500, 'User is not authroized to access self');
-        } else { 
+        } else {
+            $updatedShippingId = 0;
+            $updatedBillingId = 0;
+
             try {
                 if ($this->_checkHttpMethod(array('POST'))) { // modify user data
                     $request = _object_to_array($this->_getJsonBody());
@@ -275,11 +286,14 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     
                     $customer->setData('firstname', $updatedCustomer['firstname'])
                             ->setData('lastname', $updatedCustomer['lastname'])
-                            ->setData('email', $updatedCustomer['email'])
-                            ->save();    
+                            ->setData('email', $updatedCustomer['email']);
 
-                    $updatedShippingId = 0;
-                    $updatedBillingId = 0; 
+                    if (isset($updatedCustomer['dob'])) {
+                        $customer->setData('dob', $updatedCustomer['dob']);
+                    }
+
+                    $customer->save();
+
                     if ($updatedCustomer['addresses']) {
                         foreach($updatedCustomer['addresses'] as $updatedAdress) {
                             $updatedAdress['region'] = $updatedAdress['region']['region'];
@@ -323,9 +337,16 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
 
                 foreach ($allAddress as $address) {
                     $addressDTO = $address->getData();
-                    
                     $addressDTO['id'] = $addressDTO['entity_id'];
-                    $addressDTO['region'] = array('region' => $addressDTO['region']);
+
+                    $region = null;
+
+                    if (isset($addressDTO['region'])) {
+                        $region = $addressDTO['region'];
+                    }
+
+                    $addressDTO['region'] = ['region' => $region];
+
                     $streetDTO = explode("\n", $addressDTO['street']);
                     if(count($streetDTO) < 2)
                         $streetDTO[]='';
@@ -343,7 +364,6 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                         $addressDTO['postcode'] = '';          
                     if(!$addressDTO['telephone'])
                         $addressDTO['telephone'] = '';                                
-                    //die(print_r($addressDTO, true));
 
                     if($defaultBilling == $address->getId() || $address->getId() == $updatedBillingId) {
                         // TODO: Street + Region fields (region_code should be)

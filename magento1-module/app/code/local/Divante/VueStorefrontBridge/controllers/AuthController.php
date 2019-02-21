@@ -18,7 +18,7 @@ class Divante_VueStorefrontBridge_AuthController extends Divante_VueStorefrontBr
                     return $this->_result(500, 'No username or password given!');
                 } else {
                     $session = Mage::getSingleton('admin/session');
-                    $secretKey = trim(Mage::getConfig()->getNode('default/auth/secret'));
+                    $secretKey = $this->getSecretKey();
 
                     $user = $session->login($request->username, $request->password);
                     if ($user->getId()) {
