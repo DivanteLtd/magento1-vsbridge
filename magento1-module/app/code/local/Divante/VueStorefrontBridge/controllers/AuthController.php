@@ -24,7 +24,8 @@ class Divante_VueStorefrontBridge_AuthController extends Divante_VueStorefrontBr
         if ($this->getRequest()->getMethod() !== 'POST') {
             return $this->_result(500, 'Only POST method allowed');
         } else {
-            $request = @json_decode($this->getRequest()->getRawBody());
+            $request = $this->_getJsonBody();
+
             if (!$request) {
                 return $this->_result(500, 'No JSON object found in the request body');
             } else {
@@ -32,8 +33,9 @@ class Divante_VueStorefrontBridge_AuthController extends Divante_VueStorefrontBr
                     return $this->_result(500, 'No username or password given!');
                 } else {
                     $session   = Mage::getSingleton('admin/session');
-                    $secretKey = trim(Mage::getStoreConfig(self::XML_CONFIG_JWT_SECRET));
+                    $secretKey = $this->getSecretKey();
                     $user      = $session->login($request->username, $request->password);
+
                     if ($user->getId()) {
                         return $this->_result(200, JWT::encode(['id' => $user->getId()], $secretKey));
                     } else {

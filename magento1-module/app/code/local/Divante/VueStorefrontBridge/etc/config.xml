@@ -5,8 +5,6 @@
             <version>1.0.3</version>
         </Divante_VueStorefrontBridge>
     </modules>
-    <global>
-    </global>
     <frontend>
         <routers>
             <vsbridge>
@@ -18,10 +16,22 @@
             </vsbridge>
         </routers>
     </frontend>
+    <global>
+        <models>
+            <vsbridge>
+                <class>Divante_VueStorefrontBridge_Model</class>
+            </vsbridge>
+        </models>
+        <helpers>
+            <vsbridge>
+                <class>Divante_VueStorefrontBridge_Helper</class>
+            </vsbridge>
+        </helpers>
+    </global>
     <default>
         <vsbridge>
             <general>
-                <jwt_secret>Geiw0qua</jwt_secret>
+                <jwt_secret>Phaebah0</jwt_secret>
                 <max_page_size>5000</max_page_size>
             </general>
         </vsbridge>

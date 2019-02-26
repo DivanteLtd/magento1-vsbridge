@@ -15,8 +15,8 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
 {
     public function indexAction()
     {
-        if ($this->_authorize($this->getRequest())) {
-            $params             = $this->_processParams($this->getRequest());
+        if ($this->_authorizeAdminUser($this->getRequest())) {
+            $params = $this->_processParams($this->getRequest());
             $confChildBlacklist = [
                 'entity_id',
                 'id',
@@ -38,20 +38,20 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                 'required_options',
             ];
 
-            $result            = [];
+            $result = [];
             $productCollection = Mage::getModel('catalog/product')
                 ->getCollection()
                 ->addAttributeToSort('updated_at', 'DESC')
                 ->addAttributeToSelect('*')
                 ->setPage($params['page'], $params['pageSize']);
 
-            if (isset($params['type_id'])) {
+            if (isset($params['type_id']) && $params['type_id']) {
                 $productCollection->addFieldToFilter('type_id', $params['type_id']);
             }
 
             foreach ($productCollection as $product) {
-                $productDTO       = $product->getData();
-                $stock            = Mage::getModel('cataloginventory/stock_item')->loadByProduct($product);
+                $productDTO = $product->getData();
+                $stock = Mage::getModel('cataloginventory/stock_item')->loadByProduct($product);
                 $productDTO['id'] = intval($productDTO['entity_id']);
                 unset($productDTO['entity_id']);
                 unset($productDTO['stock_item']);
@@ -62,15 +62,15 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                 }
                 $productDTO['media_gallery'] = $product->getMediaGalleryImages();
                 if ($productDTO['type_id'] !== 'simple') {
-                    $configurable  = Mage::getModel('catalog/product_type_configurable')->setProduct($product);
+                    $configurable = Mage::getModel('catalog/product_type_configurable')->setProduct($product);
                     $childProducts = $configurable->getUsedProductCollection()->addAttributeToSelect('*')
                         ->addFilterByRequiredOptions();
 
                     $productDTO['configurable_children'] = [];
                     foreach ($childProducts as $child) {
-                        $childDTO                           = $child->getData();
-                        $childDTO['id']                     = intval($childDTO['entity_id']);
-                        $productAttributeOptions            = $product->getTypeInstance(true)
+                        $childDTO = $child->getData();
+                        $childDTO['id'] = intval($childDTO['entity_id']);
+                        $productAttributeOptions = $product->getTypeInstance(true)
                             ->getConfigurableAttributesAsArray(
                                 $product
                             );
@@ -82,7 +82,7 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                             }
 
                             $productDTO['configurable_options'][] = $productAttribute;
-                            $availableOptions                     = [];
+                            $availableOptions = [];
 
                             foreach ($productAttribute['values'] as $aOp) {
                                 $availableOptions[] = $aOp['value_index'];
@@ -91,25 +91,25 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                             $productDTO[$productAttribute['attribute_code'] . '_options'] = $availableOptions;
                         }
 
-                        $childDTO                              = $this->_filterDTO($childDTO, $confChildBlacklist);
+                        $childDTO = $this->_filterDTO($childDTO, $confChildBlacklist);
                         $productDTO['configurable_children'][] = $childDTO;
                     }
                 }
 
-                $cats                       = $product->getCategoryIds();
-                $productDTO['category']     = [];
+                $cats = $product->getCategoryIds();
+                $productDTO['category'] = [];
                 $productDTO['category_ids'] = [];
                 foreach ($cats as $category_id) {
-                    $cat                          = Mage::getModel('catalog/category')->load($category_id);
-                    $productDTO['category'][]     = [
+                    $cat = Mage::getModel('catalog/category')->load($category_id);
+                    $productDTO['category'][] = [
                         'category_id' => $cat->getId(),
-                        'name'        => $cat->getName()
+                        'name' => $cat->getName()
                     ];
                     $productDTO['category_ids'][] = $category_id;
                 }
 
                 $productDTO = $this->_filterDTO($productDTO);
-                $result[]   = $productDTO;
+                $result[] = $productDTO;
             }
 
             $this->_result(200, $result);

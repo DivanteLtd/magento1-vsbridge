@@ -37,7 +37,7 @@ class Divante_VueStorefrontBridge_Cms_BlockController extends Divante_VueStorefr
     public function indexAction()
     {
         try {
-            if ($this->_authorize($this->getRequest())) {
+            if ($this->_authorizeAdminUser($this->getRequest())) {
                 $params = $this->_processParams($this->getRequest());
                 $blocks = $this->_getCmsBlockCollection($params);
                 $this->_result(200, $blocks);

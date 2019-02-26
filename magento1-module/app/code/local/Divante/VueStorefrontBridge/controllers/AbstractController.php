@@ -2,6 +2,16 @@
 
 require_once(__DIR__ . '/../helpers/JWT.php');
 
+function _object_to_array($object) {
+    if (is_object($object)) {
+        return array_map(__FUNCTION__, get_object_vars($object));
+    } else if (is_array($object)) {
+        return array_map(__FUNCTION__, $object);
+    } else {
+        return $object;
+    }
+}
+
 /**
  * Divante VueStorefrontBridge AbstractController Class
  *
@@ -15,15 +25,27 @@ require_once(__DIR__ . '/../helpers/JWT.php');
  */
 class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controller_Front_Action
 {
+    /**
+     * @var Divante_VueStorefrontBridge_Model_Config
+     */
+    private $configSettings;
 
     /**
-     * JWT secret passphrase
+     * Divante_VueStorefrontBridge_AbstractController constructor.
+     *
+     * @param Zend_Controller_Request_Abstract  $request
+     * @param Zend_Controller_Response_Abstract $response
+     * @param array                             $invokeArgs
      */
-    const XML_CONFIG_JWT_SECRET = 'vsbridge/general/jwt_secret';
-    /**
-     * Maximum page size
-     */
-    const XML_CONFIG_MAX_PAGE_SIZE = 'vsbridge/general/max_page_size';
+    public function __construct(
+        Zend_Controller_Request_Abstract $request,
+        Zend_Controller_Response_Abstract $response,
+        array $invokeArgs = []
+    ) {
+        parent::__construct($request, $response, $invokeArgs);
+
+        $this->configSettings = Mage::getSingleton('vsbridge/config');
+    }
 
     /**
      * Sets response header content type to json
@@ -31,6 +53,56 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
     public function init()
     {
         $this->getResponse()->setHeader('Content-Type', 'application/json');
+        $this->getResponse()->setHeader('Access-Control-Allow-Origin', '*');
+        $this->getResponse()->setHeader('Access-Control-Expose-Headers', 'Link');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function preDispatch() {
+        if($this->getRequest()->getMethod() === 'OPTIONS'){
+            $this->getResponse()->setBody(json_encode(true))->setHeader('Access-Control-Allow-Origin', '*')
+                ->setHeader('Access-Control-Allow-Headers', 'Content-Type')
+                ->setHeader('Access-Control-Expose-Headers', 'Link')->sendResponse();
+            die();
+        }
+
+        Mage::app()->getTranslator()->init('frontend');
+    }
+
+    public function optionsAction()
+    {
+        return $this->_result(204, true);
+    }
+
+    /**
+     * @param $methods
+     *
+     * @return bool
+     */
+    protected function _checkHttpMethod($methods)
+    {
+        if(!is_array($methods))
+            $methods = array($methods);
+
+        return in_array($this->getRequest()->getMethod(), $methods);
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function _currentStore()
+    {
+        return Mage::app()->getStore(); // TODO: refactor to use GET parameters
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function _getJsonBody()
+    {
+        return @json_decode($this->getRequest()->getRawBody());
     }
 
     /**
@@ -40,11 +112,10 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
      *
      * @return bool
      */
-    protected function _authorize(Mage_Core_Controller_Request_Http $request)
+    protected function _authorizeAdminUser(Mage_Core_Controller_Request_Http $request)
     {
         $apikey    = $request->getParam('apikey');
-        $secretKey = trim(Mage::getStoreConfig(self::XML_CONFIG_JWT_SECRET));
-
+        $secretKey = $this->getSecretKey();
         try {
             $tokenData = JWT::decode($apikey, $secretKey, 'HS256');
             if ($tokenData->id > 0) {
@@ -64,6 +135,75 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
     }
 
     /**
+     * @return string
+     */
+    public function getSecretKey()
+    {
+        return $this->configSettings->getSecretKey();
+    }
+
+    /**
+     * Authorize the request against customers (not admin) db and return current customer
+     * @param $request
+     * @return object
+     */
+    protected function _currentCustomer($request) {
+        $token = $request->getParam('token');
+        $secretKey = $this->getSecretKey();
+
+        try {
+            $tokenData = JWT::decode($token, $secretKey, 'HS256');
+            if($tokenData->id > 0){
+                $customer = Mage::getModel('customer/customer')->load($tokenData->id);
+
+                if ($customer->getId()) {
+                    return $customer;
+                }
+            }  else {
+                return null;
+            }
+        } catch (Exception $err) {
+            return null;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param $request
+     *
+     * @return Mage_Sales_Model_Quote|null
+     * @throws Exception
+     */
+    protected function _currentQuote($request)
+    {
+        $cartId = $request->getParam('cartId');
+
+        if(intval(($cartId)) > 0)
+            return Mage::getModel('sales/quote')->load($cartId);
+        else {
+            if($cartId) {
+                $secretKey = $this->configSettings->getSecretKey();
+                $tokenData = JWT::decode($cartId, $secretKey, 'HS256');
+                return Mage::getModel('sales/quote')->load($tokenData->cartId);
+            } else
+                return null;
+        }
+    }
+
+    /**
+     * @param $quoteObj
+     * @param $customer
+     *
+     * @return bool
+     */
+    protected function _checkQuotePerms($quoteObj, $customer)
+    {
+        $quoteCustomer = $quoteObj->getCustomer();
+        return (($customer && $quoteCustomer && $quoteCustomer->getId() === $customer->getId()) || (!$quoteCustomer || !$quoteCustomer->getId()));
+    }
+
+    /**
      * Processes parameters
      *
      * @param Mage_Core_Controller_Request_Http $request
@@ -76,7 +216,7 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
         $paramsDTO['page']     = max(abs(intval($request->getParam('page'))), 1);
         $paramsDTO['pageSize'] = min(
             abs(intval($request->getParam('pageSize'))),
-            intval(trim(Mage::getStoreConfig(self::XML_CONFIG_MAX_PAGE_SIZE)))
+            $this->configSettings->getMaxPageSize()
         );
         if ($typeId = $request->getParam('type_id')) {
             $paramsDTO['type_id'] = $typeId;
@@ -84,7 +224,6 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
 
         return $paramsDTO;
     }
-
     /**
      * Filters parameters map removing blacklisted
      *
@@ -104,10 +243,8 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
                 }
             }
         }
-
         return $dtoToFilter;
     }
-
     /**
      * Sends back code and result of performed operation
      *

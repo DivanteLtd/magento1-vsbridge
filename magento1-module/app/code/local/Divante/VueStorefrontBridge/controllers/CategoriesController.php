@@ -19,7 +19,7 @@ class Divante_VueStorefrontBridge_CategoriesController extends Divante_VueStoref
      */
     public function indexAction()
     {
-        if ($this->_authorize($this->getRequest())) {
+        if ($this->_authorizeAdminUser($this->getRequest())) {
             $params     = $this->_processParams($this->getRequest());
             $categories = Mage::getModel('catalog/category')->getCollection()->addAttributeToSelect('*')->setPage(
                 $params['page'],

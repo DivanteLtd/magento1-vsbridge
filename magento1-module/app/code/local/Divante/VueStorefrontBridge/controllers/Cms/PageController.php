@@ -41,7 +41,7 @@ class Divante_VueStorefrontBridge_Cms_PageController extends Divante_VueStorefro
     public function indexAction()
     {
         try {
-            if ($this->_authorize($this->getRequest())) {
+            if ($this->_authorizeAdminUser($this->getRequest())) {
                 $params = $this->_processParams($this->getRequest());
                 $pages  = $this->_getCmsPageCollection($params);
                 $this->_result(200, $pages);

@@ -37,13 +37,12 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
         'static'    => self::ES_DATA_TYPE_STRING,
     );
 
-
     /**
      * index action
      */
     public function indexAction()
     {
-        if ($this->_authorize($this->getRequest())) {
+        if ($this->_authorizeAdminUser($this->getRequest())) {
             $params       = $this->_processParams($this->getRequest());
             $productAttrs = Mage::getResourceModel('catalog/product_attribute_collection');
             $attrList     = [];
@@ -77,7 +76,7 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
      */
     public function productMappingAction()
     {
-        if ($this->_authorize($this->getRequest())) {
+        if ($this->_authorizeAdminUser($this->getRequest())) {
             $result            = array();
             $attributeMapping  = array();
             $productAttributes = Mage::getResourceModel('catalog/product_attribute_collection');
