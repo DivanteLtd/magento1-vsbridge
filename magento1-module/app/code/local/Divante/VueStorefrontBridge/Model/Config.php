@@ -8,12 +8,12 @@ class Divante_VueStorefrontBridge_Model_Config
     /**
      * JWT secret passphrase
      */
-    const XML_CONFIG_JWT_SECRET = 'vuestorefrontbridge/general/jwt_secret';
+    const XML_CONFIG_JWT_SECRET = 'vsbridge/general/jwt_secret';
 
     /**
      * Maximum page size
      */
-    const XML_CONFIG_MAX_PAGE_SIZE = 'vuestorefrontbridge/general/max_page_size';
+    const XML_CONFIG_MAX_PAGE_SIZE = 'vsbridge/general/max_page_size';
 
     /**
      * @return string

@@ -17,7 +17,9 @@ function _object_to_array($object) {
  *
  * @category    Divante
  * @package     VueStorefrontBridge
- * @author      Piotr Karwatka <pkarwatka@divante.co>, Björn Kraus PhoenixPM - BK, Dariusz Oliwa <doliwa@divante.co>
+ * @author      Piotr Karwatka <pkarwatka@divante.co>
+ * @author      Björn Kraus PhoenixPM - BK
+ * @author      Dariusz Oliwa <doliwa@divante.co>
  * @copyright   Copyright (C) 2018
  * @license     MIT License
  */
@@ -120,12 +122,15 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
                 return true;
             } else {
                 $this->_result(401, 'Unauthorized request');
+
                 return false;
             }
         } catch (Exception $err) {
             $this->_result(500, $err->getMessage());
+
             return false;
         }
+
         return false;
     }
 
@@ -216,6 +221,7 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
         if ($typeId = $request->getParam('type_id')) {
             $paramsDTO['type_id'] = $typeId;
         }
+
         return $paramsDTO;
     }
     /**
@@ -256,5 +262,16 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
                 JSON_NUMERIC_CHECK
             )
         )->setHttpResponseCode($code)->setHeader('Content-Type', 'application/json');
+    }
+
+    /**
+     * Check if the version of Magento currently being rune is Enterprise Edition
+     *
+     * @return bool
+     */
+    protected function _isMageEnterprise()
+    {
+        return Mage::getConfig()->getModuleConfig('Enterprise_Enterprise')
+            && Mage::getConfig()->getModuleConfig('Enterprise_Cms');
     }
 }

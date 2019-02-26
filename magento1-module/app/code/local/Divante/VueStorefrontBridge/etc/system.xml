@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <config>
     <sections>
-        <vuestorefrontbridge translate="label" module="oauth">
+        <vsbridge translate="label" module="vsbridge">
             <label>VueStorefront Bridge</label>
-            <tab>advanced</tab>
+            <tab>service</tab>
             <frontend_type>text</frontend_type>
             <sort_order>1000</sort_order>
             <show_in_default>1</show_in_default>
@@ -38,6 +38,6 @@
                     </fields>
                 </general>
             </groups>
-        </vuestorefrontbridge>
+        </vsbridge>
     </sections>
 </config>

@@ -8,10 +8,10 @@
                         <children>
                             <config>
                                 <children>
-                                    <vuestorefrontbridge translate="title">
+                                    <vsbridge translate="title">
                                         <title>VueStorefront Bridge</title>
                                         <sort_order>40</sort_order>
-                                    </vuestorefrontbridge>
+                                    </vsbridge>
                                 </children>
                             </config>
                         </children>

@@ -1,11 +1,8 @@
 const config = require('../config.json')
 const VsBridgeApiClient = require('./lib/vsbridge-api')
 const api = new VsBridgeApiClient(config)
-
 const BasicImporter = require('./importers/basic')
-
 const _ = require('lodash')
-
 const promiseLimit = require('promise-limit')
 const limit = promiseLimit(3) // limit N promises to be executed at time
 const promise = require('./lib/promise') // right now we're using serial execution because of recursion stack issues
@@ -13,18 +10,16 @@ const path = require('path')
 const shell = require('shelljs')
 const fs = require('fs')
 const jsonFile = require('jsonfile')
-
 const putMappings = require('./meta/elastic').putMappings
-
 
 let INDEX_VERSION = 1
 let INDEX_META_DATA
-let AUTH_TOKEN = '' 
+let AUTH_TOKEN = ''
+
 const INDEX_META_PATH = path.join(__dirname, '../var/indexMetadata.json')
-
 const { spawn } = require('child_process');
-
 const es = require('elasticsearch')
+
 let client = new es.Client({ // as we're runing tax calculation and other data, we need a ES indexer
     host: config.elasticsearch.host,
     log: 'error',
@@ -37,7 +32,7 @@ const cli = CommandRouter()
 
 cli.option({ name: 'page'
 , alias: 'p'
-, default: 0
+, default: 1
 , type: Number
 })
 cli.option({ name: 'pageSize'
@@ -75,7 +70,6 @@ function authUser(callback) {
             if (callback) {
                 callback(resp.body);
             }
-
         } else {
             console.error(resp.body.result);
         }
@@ -84,7 +78,6 @@ function authUser(callback) {
 
 function readIndexMeta() {
     let indexMeta = { version: 0, created: new Date(), updated: new Date() }
-
     try {
         indexMeta = jsonFile.readFileSync(INDEX_META_PATH)
     } catch (err){
@@ -94,10 +87,9 @@ function readIndexMeta() {
 }
 
 function recreateTempIndex() {
-
     let indexMeta = readIndexMeta()
 
-    try { 
+    try {
         indexMeta.version ++
         INDEX_VERSION = indexMeta.version
         indexMeta.updated = new Date()
@@ -106,15 +98,14 @@ function recreateTempIndex() {
         console.error(err)
     }
 
-    let step2 = () => { 
+    let step2 = () => {
         client.indices.create({ index: `${config.elasticsearch.indexName}_${INDEX_VERSION}` }).then(result=>{
             console.log('Index Created', result)
             console.log('** NEW INDEX VERSION', INDEX_VERSION, INDEX_META_DATA.created)
         }).then((result) => {
-            putMappings(client, `${config.elasticsearch.indexName}_${INDEX_VERSION}`, ()  => {})
+            putMappings(client, `${config.elasticsearch.indexName}_${INDEX_VERSION}`, ()  => {}, AUTH_TOKEN)
         })
     }
-
 
     return client.indices.delete({
         index: `${config.elasticsearch.indexName}_${INDEX_VERSION}`
@@ -128,23 +119,22 @@ function recreateTempIndex() {
 }
 
 function publishTempIndex() {
-    let step2 = () => { 
+    let step2 = () => {
         client.indices.putAlias({ index: `${config.elasticsearch.indexName}_${INDEX_VERSION}`, name: config.elasticsearch.indexName }).then(result=>{
             console.log('Index alias created', result)
         })
     }
 
-
     return client.indices.deleteAlias({
         index: `${config.elasticsearch.indexName}_${INDEX_VERSION-1}`,
-        name: config.elasticsearch.indexName 
+        name: config.elasticsearch.indexName
     }).then((result) => {
         console.log('Public index alias deleted', result)
         step2()
     }).catch((err) => {
         console.log('Public index alias does not exists', err.message)
         step2()
-    })  
+    })
 }
 
 function storeResults(singleResults, entityType) {
@@ -154,18 +144,17 @@ function storeResults(singleResults, entityType) {
             type: entityType,
             id: ent.id,
             body: ent
-        })                    
+        })
     })
 }
 
 
 /**
  * Import full list of specific entites
- * @param {String} entityType 
- * @param {Object} importer 
+ * @param {String} entityType
+ * @param {Object} importer
  */
 function importListOf(entityType, importer, config, api, page = 0, pageSize = 100, recursive = true) {
-
     if (!config.vsbridge[entityType + '_endpoint'])
     {
         console.error('No endpoint defined for ' + entityType)
@@ -173,22 +162,19 @@ function importListOf(entityType, importer, config, api, page = 0, pageSize = 10
     }
 
     return new Promise((resolve, reject) => {
-
         let query = {
             entityType: entityType,
             page: page,
             pageSize: pageSize
         }
 
-
         let generalQueue = []
         console.log('*** Getting objects list for', query)
         api.authWith(AUTH_TOKEN);
         api.get(config.vsbridge[entityType + '_endpoint']).type('json').query(query).end((resp) => {
-            
             if (resp.body && resp.body.code !== 200) { // unauthroized request
                 console.log(resp.body.result);
-                process.exit(-1);    
+                process.exit(-1);
             }
 
             let queue = []
@@ -206,18 +192,18 @@ function importListOf(entityType, importer, config, api, page = 0, pageSize = 10
             }
             let resultParser = (results) => {
                 console.log('** Page done ', page, resp.body.result.length)
-                
+
                 if(resp.body.result.length === pageSize)
                 {
                     if(recursive) {
                         console.log('*** Switching page!')
-                        return importListOf(entityType, importer, config, api, page + 1, pageSize) 
+                        return importListOf(entityType, importer, config, api, page + 1, pageSize)
                     }
                 }
             }
             if(cli.options.runSerial)
                 promise.serial(queue).then(resultParser).then((res) => resolve(res)).catch((reason) => { console.error(reason); reject() })
-            else 
+            else
                 Promise.all(queue).then(resultParser).then((res) => resolve(res)).catch((reason) => { console.error(reason); reject() })
         })
     })
@@ -226,49 +212,87 @@ function importListOf(entityType, importer, config, api, page = 0, pageSize = 10
 cli.command('products',  () => { // TODO: add parallel processing
    showWelcomeMsg()
 
-   importListOf('product', new BasicImporter('product', config, api, page = cli.options.page, pageSize = cli.options.pageSize), config, api, page = cli.options.page, pageSize = cli.options.pageSize).then((result) => {
+   importListOf(
+       'product',
+       new BasicImporter('product', config, api, page = cli.options.page, pageSize = cli.options.pageSize),
+       config,
+       api,
+       page = cli.options.page,
+       pageSize = cli.options.pageSize
+    ).then((result) => {
 
    }).catch(err => {
       console.error(err)
    })
-})    
+})
 
 cli.command('taxrules',  () => {
-    importListOf('taxrule', new BasicImporter('taxrule', config, api, page = cli.options.page, pageSize = cli.options.pageSize), config, api, page = cli.options.page, pageSize = cli.options.pageSize).then((result) => {
- 
+    importListOf(
+        'taxrule',
+        new BasicImporter('taxrule', config, api, page = cli.options.page, pageSize = cli.options.pageSize),
+        config,
+        api,
+        page = cli.options.page,
+        pageSize = cli.options.pageSize
+    ).then((result) => {
+
     }).catch(err => {
        console.error(err)
-    })       
+    })
 
 });
 
 cli.command('attributes',  () => {
     showWelcomeMsg()
+    importListOf(
+        'attribute',
+        new BasicImporter('attribute', config, api, page = cli.options.page, pageSize = cli.options.pageSize),
+        config,
+        api,
+        page = cli.options.page,
+        pageSize = cli.options.pageSize
+    ).then((result) => {
 
-    importListOf('attribute', new BasicImporter('attribute', config, api, page = cli.options.page, pageSize = cli.options.pageSize), config, api, page = cli.options.page, pageSize = cli.options.pageSize).then((result) => {
- 
     }).catch(err => {
        console.error(err)
-    })       
+    })
 });
 
-cli.command('categories',  () => { 
+cli.command('categories',  () => {
     showWelcomeMsg()
+    importListOf(
+        'category',
+        new BasicImporter('category', config, api, page = cli.options.page, pageSize = cli.options.pageSize),
+        config,
+        api,
+        page = cli.options.page,
+        pageSize = cli.options.pageSize
+    ).then((result) => {
 
-    importListOf('category', new BasicImporter('category', config, api, page = cli.options.page, pageSize = cli.options.pageSize), config, api, page = cli.options.page, pageSize = cli.options.pageSize).then((result) => {
- 
     }).catch(err => {
        console.error(err)
-    })    
+    })
 });
 
-
+cli.command('cms',  () => {
+    showWelcomeMsg()
+    if (cli.options.pages) {
+        importCmsPages()
+    } else if (cli.options.blocks) {
+        importCmsBlocks()
+    } else if (cli.options.hierarchy) {
+        importCmsHierarchy()
+    } else {
+        importCmsPages()
+        importCmsBlocks()
+        importCmsHierarchy()
+    }
+});
 
 cli.command('new',  () => {
     showWelcomeMsg()
     recreateTempIndex()
 });
-
 
 cli.command('publish',  () => {
     showWelcomeMsg()
@@ -279,8 +303,7 @@ cli.on('notfound', (action) => {
   console.error('I don\'t know how to: ' + action)
   process.exit(1)
 })
-  
-  
+
 process.on('unhandledRejection', (reason, p) => {
   console.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
    // application specific logging, throwing an error, or other logic here
@@ -291,7 +314,6 @@ process.on('uncaughtException', function (exception) {
     // if you are on production, maybe you can send the exception details to your
     // email as well ?
 });
-  
 
 INDEX_META_DATA = readIndexMeta()
 INDEX_VERSION = INDEX_META_DATA.version
@@ -301,8 +323,48 @@ authUser((authResp) => {
   cli.parse(process.argv);
 })
 
+function importCmsPages() {
+    importListOf(
+        'cms_page',
+        new BasicImporter('cms_page', config, api, page = cli.options.page, pageSize = cli.options.pageSize),
+        config,
+        api,
+        page = cli.options.page,
+        pageSize = cli.options.pageSize
+    ).then((result) => {
+    }).catch(err => {
+        console.error(err)
+    })
+}
 
- 
+function importCmsBlocks() {
+    importListOf(
+        'cms_block',
+        new BasicImporter('cms_block', config, api, page = cli.options.page, pageSize = cli.options.pageSize),
+        config,
+        api,
+        page = cli.options.page,
+        pageSize = cli.options.pageSize
+    ).then((result) => {
+    }).catch(err => {
+        console.error(err)
+    })
+}
+
+function importCmsHierarchy() {
+    importListOf(
+        'cms_hierarchy',
+        new BasicImporter('cms_hierarchy', config, api, page = cli.options.page, pageSize = cli.options.pageSize),
+        config,
+        api,
+        page = cli.options.page,
+        pageSize = cli.options.pageSize
+    ).then((result) => {
+    }).catch(err => {
+        console.error(err)
+    })
+}
+
 // Using a single function to handle multiple signals
 function handle(signal) {
     console.log('Received  exit signal. Bye!');

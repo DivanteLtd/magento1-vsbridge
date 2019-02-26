@@ -1,5 +1,5 @@
 # Vue Storefront support for Magento 1.9
-This projects enables You to use Magento 1.9 as a backend platform for [Vue Storefront - first Progressive Web App for e-Commerce](https://github.com/DivanteLtd/vue-storefront). 
+This projects enables You to use Magento 1.9 as a backend platform for [Vue Storefront - first Progressive Web App for e-Commerce](https://github.com/DivanteLtd/vue-storefront).
 
 [![Home page of Magento1 demo](doc/media/magento1-hp.png)](https://demo-magento1.vuestorefront.io)
 
@@ -35,7 +35,7 @@ cp magento1-module/app/* <MAGENTO_FOLDER>/app/
 
 Magento module uses JWT tokens authorization method based on standard Magento admin users account system. **Please create a dedicated admin account** for magento1-bridge purposes only with minimal access (ACL) to the catalog part.
 
-Then, please setup the JWT "secretToken" by modifying: [`magento1-module/app/etc/modules/Divante_VueStorefrontBridge.xml`](https://github.com/DivanteLtd/magento1-vsbridge/blob/master/magento1-module/app/code/local/Divante/VueStorefrontBridge/etc/config.xml)
+Then, please configure the JWT Secret in Magento configuration: System > Configuration > Services > VueStorefront Bridge.
 
 https://github.com/DivanteLtd/magento1-vsbridge/blob/3f92a6d842e6afb4c7e34e789229848710127b8b/magento1-module/app/code/local/Divante/VueStorefrontBridge/etc/config.xml#L5
 
@@ -53,7 +53,7 @@ This tool required ElasticSearch instance up and running. The simplest way to ha
 Then you need to modify the configs:
 
 ```
-cd node-app/src
+cd node-app
 cp config.example.json config.json
 nano config.json
 ```
@@ -61,7 +61,7 @@ nano config.json
 In the config file please setup the following variables:
 - [`auth`](https://github.com/DivanteLtd/magento1-vsbridge/blob/5d4b9285c2dd2a20900e6075f50ebc2d7802499e/node-app/config.example.json#L9) section to setup Magento's user login and password and the previously set [JWT secret](https://github.com/DivanteLtd/magento1-vsbridge/blob/5d4b9285c2dd2a20900e6075f50ebc2d7802499e/magento1-module/app/code/local/Divante/VueStorefrontBridge/etc/config.xml#L6)
 - ['endpoint'](https://github.com/DivanteLtd/magento1-vsbridge/blob/5d4b9285c2dd2a20900e6075f50ebc2d7802499e/node-app/config.example.json#L14) should match your Magento 1.9 URL,
-- [`elasticsearch.indexName`](https://github.com/DivanteLtd/magento1-vsbridge/blob/5d4b9285c2dd2a20900e6075f50ebc2d7802499e/node-app/config.example.json#L4) should be set to Your ElasticSearch index which then will be connected to the Vue Storefront. It can be fresh / non-existient index as well (will be created then). For example You may have: `vue_storefront_mangento1`
+- [`elasticsearch.indexName`](https://github.com/DivanteLtd/magento1-vsbridge/blob/5d4b9285c2dd2a20900e6075f50ebc2d7802499e/node-app/config.example.json#L4) should be set to Your ElasticSearch index which then will be connected to the Vue Storefront. It can be fresh / non-existient index as well (will be created then). For example You may have: `vue_storefront_magento1`
 
 ## Vue Storefront setup
 
@@ -74,10 +74,13 @@ By default Vue Storefront uses ES index named `vue_storefront_catalog`. Please a
 Restart `vue-storefront` and `vue-storefront-api`.
 
 # Available commands
-The bridge works on temporary, versioned ES indexes. You decide when the index should be published (when all data objects are properly set).
+The bridge works on temporary, versioned ES indexes. You decide when the index should be published (when all data objects are properly set). All commands exec from `node-app/src` directory.
 
-Create new version of index (for example: vue_storefront_mangento1_1): 
+**Note:** We're offering a native, Magento1 data indexer that's a Magento1 module - instead of node.js app. Please check out [magento1-vsbridge-indexer](https://github.com/DivanteLtd/magento1-vsbridge-indexer) for details!
+
+Create new version of index (for example: vue_storefront_magento1_1):
 ```
+cd node-app/src
 node index.js new
 ```
 
@@ -87,9 +90,18 @@ node index.js attributes
 node index.js taxrules
 node index.js categories
 node index.js products
+node index.js cms
 ```
 
-Publish new version of index (creates an alias with prod. name of the index: vue_storefront_magento1_1 -> vue_storefront_magento1): 
+Please note that if you want import / update data only for cms pages / blocks / hierarchy you can use this commads:
+```
+node index.js cms --pages (import / update only cms page data)
+node index.js cms --blocks (import / update only cms block data)
+node index.js cms --hierarchy (import / update only cms hierarchy data)
+node index.js cms (without any params import all instances at once)
+```
+
+Publish new version of index (creates an alias with prod. name of the index: vue_storefront_magento1_1 -> vue_storefront_magento1):
 ```
 node index.js publish
 ```
@@ -111,8 +123,8 @@ Please feel free to extend Magento module or Node app and contribute Your change
 
 Some ideas for contributions:
 - media gallery sync,
-- shopping cart / order sync (please [contact us for details](contributors@vuestorefront.io)).
+- shopping cart / order sync (please [contact us for details](mailto:contributors@vuestorefront.io)).
 
-# License 
+# License
 `magento1-vsbridge` source code is completely free and released under the [MIT License](https://github.com/DivanteLtd/vue-storefront/blob/master/LICENSE).
 

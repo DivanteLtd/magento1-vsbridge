@@ -2435,20 +2435,34 @@ This method is called just after any Vue Storefrotn cart modification to check i
 
 #### RESPONSE BODY:
 ```json
-{
-    "code":200,
-    "result":
-        [
-            {
-                "item_id":5853,
-                "sku":"MS10-XS-Black",
-                "qty":1,"name":"Logan  HeatTec&reg; Tee-XS-Black",
-                "price":0,
-                "product_type":"simple",
-                "quote_id":"81668"
-            }
-        ]
+{  
+   "cartItem":{  
+      "sku":"WS12-XS-Orange",
+      "qty":1,
+      "product_option":{  
+         "extension_attributes":{  
+            "custom_options":[  
+
+            ],
+            "configurable_item_options":[  
+               {  
+                  "option_id":"93",
+                  "option_value":"56"
+               },
+               {  
+                  "option_id":"142",
+                  "option_value":"167"
+               }
+            ],
+            "bundle_options":[  
+
+            ]
+         }
+      },
+      "quoteId":"0a8109552020cc80c99c54ad13ef5d5a"
+   }
 }
+
 ```
 
 
@@ -2466,14 +2480,32 @@ This method is called just after `api/cart/pull` as a consequence of the synchro
 #### REQUEST BODY:
 
 ```json
-{
-    "cartItem":
-        {
-            "sku":"MS10-XS-Black",
-            "qty":2,
-            "item_id":5853,
-            "quoteId":"81668"
-        }
+{  
+   "cartItem":{  
+      "sku":"WS12-XS-Orange",
+      "qty":1,
+      "product_option":{  
+         "extension_attributes":{  
+            "custom_options":[  
+
+            ],
+            "configurable_item_options":[  
+               {  
+                  "option_id":"93",
+                  "option_value":"56"
+               },
+               {  
+                  "option_id":"142",
+                  "option_value":"167"
+               }
+            ],
+            "bundle_options":[  
+
+            ]
+         }
+      },
+      "quoteId":"0a8109552020cc80c99c54ad13ef5d5a"
+   }
 }
 ```
 
@@ -2645,7 +2677,28 @@ You have totals data for the current, synchronized quote returned:
                         "options":"[]",
                         "weee_tax_applied_amount":null,
                         "weee_tax_applied":null,
-                        "name":"Logan  HeatTec&reg; Tee-XS-Black"
+                        "name":"Logan  HeatTec&reg; Tee-XS-Black",
+                        "options": "[{ \"label\": \"Color\", \"value\": \"red\" }, { \"label\": \"Size\", \"value\": \"XL\" }]",
+                        "product_option":{  
+                           "extension_attributes":{  
+                              "custom_options":[  
+
+                              ],
+                              "configurable_item_options":[  
+                                 {  
+                                    "option_id":"93",
+                                    "option_value":"56"
+                                 },
+                                 {  
+                                    "option_id":"142",
+                                    "option_value":"167"
+                                 }
+                              ],
+                              "bundle_options":[  
+
+                              ]
+                           }    
+                        }
                     }
                 ],
             "total_segments":
@@ -3125,6 +3178,53 @@ null
 #### RESPONSE BODY:
 
 `curl 'https://your-domain.example.com/vsbridge/user/login' -H 'content-type: application/json' -H 'accept: application/json' --data-binary '"username":"pkarwatka102@divante.pl","password":"TopSecretPassword}'`
+
+```json
+{
+    "code":200,
+    "result":"xu8h02nd66yq0gaayj4x3kpqwity02or",
+    "meta": { "refreshToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjEzOSJ9.a4HQc2HODmOj5SRMiv-EzWuMZbyIz0CLuVRhPw_MrOM" }
+}
+```
+
+or in case of error:
+
+```json
+{
+    "code":500,
+    "result":"You did not sign in correctly or your account is temporarily disabled."
+}
+```
+
+The result is a authorization token, that should be passed via `?token=xu8h02nd66yq0gaayj4x3kpqwity02or` GET param to all subsequent API calls that requires authorization
+
+#### RESPONSE CODES:
+
+- `200` when success
+- `500` in case of error
+
+
+### POST /vsbridge/user/refresh
+
+Refresh the user token
+
+#### GET PARAMS:
+
+```
+null
+```
+
+#### REQUEST BODY:
+
+```json
+{
+    "refreshToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjEzOSJ9.a4HQc2HODmOj5SRMiv-EzWuMZbyIz0CLuVRhPw_MrOM"
+}
+```
+
+#### RESPONSE BODY:
+
+`curl 'https://your-domain.example.com/vsbridge/user/login' -H 'content-type: application/json' -H 'accept: application/json' --data-binary '"refreshToken":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjEzOSJ9.a4HQc2HODmOj5SRMiv-EzWuMZbyIz0CLuVRhPw_MrOM"}'`
 
 ```json
 {

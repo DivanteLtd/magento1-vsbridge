@@ -29,11 +29,11 @@
         </helpers>
     </global>
     <default>
-        <vuestorefrontbridge>
+        <vsbridge>
             <general>
                 <jwt_secret>Phaebah0</jwt_secret>
-                <max_page_size>20</max_page_size>
+                <max_page_size>5000</max_page_size>
             </general>
-        </vuestorefrontbridge>
+        </vsbridge>
     </default>
 </config>
