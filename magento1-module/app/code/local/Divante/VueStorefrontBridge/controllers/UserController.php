@@ -64,7 +64,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
         }
 
         /** @var  $helper */
-        $helper = Mage::helper('adika_vsbridge');
+        $helper = Mage::helper('vsbridge');
 
         try {
             $customer = Mage::getModel('customer/customer')
