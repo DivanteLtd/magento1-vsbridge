@@ -12,7 +12,7 @@ Sign up for a demo at https://vuestorefront.io/ (Vue Storefront integrated with 
 # Magento 1.9 data bridge
 Vue Storefront is platform agnostic - which mean: it can be connected to virtually any eCommerce CMS. This project is a data connector for *Magento 1.9*.
 
-**This bridge at current stage is synchronizing the catalog part: *products, categories, attributes and taxRules*  the missing part is *users, orders and cart* synchronization. If you like to have two way communication just contact us at contributors@vuestorefront.io**.
+**From 26th of Feb 2019** this is module is finally **MIT** licensed with **full support for shopping carts, orders and users sync**!
 
 Areas for improvements:
 - performance (right now it's single threaded but can be easily modified to use node-cluster),
@@ -149,8 +149,7 @@ As you may observed, configured products do work perfectly well after imported t
 Please feel free to extend Magento module or Node app and contribute Your changes to the community!
 
 Some ideas for contributions:
-- media gallery sync,
-- shopping cart / order sync (please [contact us for details](mailto:contributors@vuestorefront.io)).
+- authorized users checkout.
 
 # License
 `magento1-vsbridge` source code is completely free and released under the [MIT License](https://github.com/DivanteLtd/vue-storefront/blob/master/LICENSE).
