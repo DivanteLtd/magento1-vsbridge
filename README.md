@@ -94,16 +94,8 @@ After installing the [vue-storefront-api](https://github.com/DivanteLtd/vue-stor
   "magento1": {
     "url": "http://magento-demo.local",
     "imgUrl": "http://magento-demo.local/media/catalog/product",
-    "magentoUserName": "",
-    "magentoUserPassword": "",
-    "httpUserName": "",
-    "httpUserPassword": "",
     "api": {
       "url": "http://magento-demo.local/vsbridge",
-      "consumerKey": "",
-      "consumerSecret": "",
-      "accessToken": "",
-      "accessTokenSecret": ""
     }
   },
 ```
