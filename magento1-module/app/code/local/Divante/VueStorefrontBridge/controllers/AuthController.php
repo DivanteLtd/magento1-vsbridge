@@ -1,6 +1,6 @@
 <?php
-require_once 'AbstractController.php';
-require_once __DIR__ . '/../helpers/JWT.php';
+require_once('AbstractController.php');
+require_once(__DIR__ . '/../helpers/JWT.php');
 
 /**
  * Divante VueStorefrontBridge AuthController Class
