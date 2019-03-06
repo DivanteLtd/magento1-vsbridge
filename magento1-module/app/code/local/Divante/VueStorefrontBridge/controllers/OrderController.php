@@ -51,8 +51,12 @@ class Divante_VueStorefrontBridge_OrderController extends Divante_VueStorefrontB
             );
         }
 
+        $customerObj = null;
         if (!empty($request->user_id)) {
-            return $this->_result(500, 'Only placing order for guest is supported.');
+            $customer = Mage::getModel('customer/customer')->load($request->user_id);
+            if ($customer->getId()) {
+                $customerObj = $customer;
+            }
         }
 
         $this->getRequest()->setParam(
@@ -61,6 +65,7 @@ class Divante_VueStorefrontBridge_OrderController extends Divante_VueStorefrontB
         );
 
         $quoteObj = $this->requestModel->currentQuote($this->getRequest());
+
 
         if (!$quoteObj->getIsActive()) {
             return $this->_result(500, sprintf('No such entity with id %s', $request->cart_id));
@@ -72,7 +77,7 @@ class Divante_VueStorefrontBridge_OrderController extends Divante_VueStorefrontB
 
         try {
             /** @var Divante_VueStorefrontBridge_Model_Api_Order_Create $apiOrderService */
-            $apiOrderService = Mage::getModel('vsbridge/api_order_create', $quoteObj);
+            $apiOrderService = Mage::getModel('vsbridge/api_order_create', [$quoteObj, $customerObj]);
             $order = $apiOrderService->execute($request);
 
             return $this->_result(200, $order->getId());

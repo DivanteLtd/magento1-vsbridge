@@ -21,13 +21,19 @@ class Divante_VueStorefrontBridge_Model_Api_Order_Create
     private $quote;
 
     /**
+     * @var Mage_Customer_Model_Customer
+     */
+    private $customer;
+
+    /**
      * Divante_VueStorefrontBridge_Model_Api_Order constructor.
      *
      * @param Mage_Sales_Model_Quote $quote
      */
-    public function __construct(Mage_Sales_Model_Quote $quote)
+    public function __construct($payload)
     {
-        $this->quote = $quote;
+        $this->quote     = $payload[0];
+        $this->customer  = $payload[1];
         $this->cartModel = Mage::getSingleton('vsbridge/api_cart');
     }
 
@@ -49,17 +55,30 @@ class Divante_VueStorefrontBridge_Model_Api_Order_Create
         $billingAddress = (array)$requestPayload->addressInformation->billingAddress;
         $shippingAddress = (array)$requestPayload->addressInformation->shippingAddress;
 
+        // Assign customer if exists
+        if (!$customer) {
+            $this->quote->setCustomerIsGuest(true);
+        } else {
+            $this->quote->setCustomerIsGuest(false);
+            $this->quote->assignCustomer($this->customer);
+        }
+
         // Add billing address to quote
         /** @var Mage_Sales_Model_Quote_Address $billingAddressData */
         $billingAddressData = $this->quote->getBillingAddress()->addData($billingAddress);
         $billingAddressData->implodeStreetAddress();
-        $this->quote->setCustomerIsGuest(true);
         $this->quote->setCustomerEmail($billingAddressData->getEmail());
         $this->quote->setCustomerFirstname($billingAddressData->getFirstname());
         $this->quote->setCustomerLastname($billingAddressData->getLastname());
 
         // Add shipping address to quote
         $shippingAddressData = $this->quote->getShippingAddress()->addData($shippingAddress);
+
+        // NA eq to company not defined
+        if ($shippingAddress['company'] == 'NA') {
+            $shippingAddressData->setCompany(null);
+        }
+
         $shippingAddressData->implodeStreetAddress();
         $shippingMethodCode = $requestPayload->addressInformation->shipping_method_code;
         $paymentMethodCode = $requestPayload->addressInformation->payment_method_code;
