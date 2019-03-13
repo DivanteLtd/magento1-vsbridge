@@ -1,6 +1,9 @@
 <?php
 require_once('AbstractController.php');
 require_once(__DIR__.'/../helpers/JWT.php');
+require_once(__DIR__.'/../Mapper/CustomerMapper.php');
+require_once(__DIR__.'/../Mapper/AddressMapper.php');
+require_once(__DIR__.'/../Mapper/OrderMapper.php');
 
 class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBridge_AbstractController
 {
@@ -194,36 +197,11 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 ->setOrder('created_at', 'desc');
 
             $ordersDTO = [];
-            /** @var Mage_Catalog_Model_Resource_Product $resourceModel */
-            $resourceModel = Mage::getResourceModel('catalog/product');
-            
+            $orderMapper = new OrderMapper();
+
             /** @var Mage_Sales_Model_Order $order */
             foreach ($orderCollection as $order) {
-                $orderDTO = $order->getData();
-                $orderDTO['id'] = $orderDTO['entity_id'];
-                $orderDTO['items'] = [];
-
-                foreach($order->getAllVisibleItems() as $item) {
-                    $itemDTO = $item->getData();
-                    $itemDTO['id'] = $itemDTO['item_id'];
-                    $itemDTO['thumbnail'] = null;
-
-                    $image = $resourceModel->getAttributeRawValue(
-                        $item->getProductId(),
-                        'thumbnail',
-                        $order->getStoreId()
-                    );
-
-                    if ($image) {
-                        $itemDTO['thumbnail'] = $image;
-                    }
-
-                    $orderDTO['items'][] = $itemDTO;
-                }
-
-                $payment = $order->getPayment();
-                $orderDTO['payment'] = $payment->toArray();
-                $orderDTO['payment']['method_title'] = $payment->getMethodInstance()->getTitle();
+                $orderDTO = $orderMapper->toDto($order);
                 $ordersDTO[] = $orderDTO;
             }
 
@@ -266,9 +244,10 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
 
         try{
             $customer->save();
-            $filteredCustomerData = $this->_filterDTO($customer->getData(), array('password', 'password_hash', 'password_confirmation', 'confirmation', 'entity_type_id'));
+            $customerMapper = new CustomerMapper();
+            $customerDto = $customerMapper->toDto($customer);
 
-            return $this->_result(200, $filteredCustomerData); // TODO: add support for 'Refresh-token'
+            return $this->_result(200, $customerDto); // TODO: add support for 'Refresh-token'
         } catch (Exception $e) {
             return $this->_result(500, $e->getMessage());
         }
@@ -336,7 +315,9 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     }
                 }
                 $customer->load($customer->getId());
-                $customerDTO = $customer->getData();
+                $customerMapper = new CustomerMapper();
+                $customerDTO = $customerMapper->toDto($customer);
+
                 $subscription = Mage::getModel('newsletter/subscriber')->loadByCustomer($customer);
                 $customerDTO['is_subscribed'] = $subscription->isSubscribed();
 
@@ -344,36 +325,10 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 $defaultBilling  = $customer->getDefaultBilling();
                 $defaultShipping = $customer->getDefaultShipping();
                 $customerDTO['addresses'] = array();
+                $addressMapper = new AddressMapper();
 
                 foreach ($allAddress as $address) {
-                    $addressDTO = $address->getData();
-                    $addressDTO['id'] = $addressDTO['entity_id'];
-
-                    $region = null;
-
-                    if (isset($addressDTO['region'])) {
-                        $region = $addressDTO['region'];
-                    }
-
-                    $addressDTO['region'] = ['region' => $region];
-
-                    $streetDTO = explode("\n", $addressDTO['street']);
-                    if(count($streetDTO) < 2)
-                        $streetDTO[]='';
-
-                    $addressDTO['street'] = $streetDTO;
-                    if(!$addressDTO['firstname'])
-                        $addressDTO['firstname'] = $customerDTO['firstname'];
-                    if(!$addressDTO['lastname'])
-                        $addressDTO['lastname'] = $customerDTO['lastname'];
-                    if(!$addressDTO['city'])
-                        $addressDTO['city'] = '';
-                    if(!$addressDTO['country_id'])
-                        $addressDTO['country_id'] = 'US';                        
-                    if(!$addressDTO['postcode'])
-                        $addressDTO['postcode'] = '';          
-                    if(!$addressDTO['telephone'])
-                        $addressDTO['telephone'] = '';                                
+                    $addressDTO = $addressMapper->toDto($address);
 
                     if($defaultBilling == $address->getId() || $address->getId() == $updatedBillingId) {
                         // TODO: Street + Region fields (region_code should be)
@@ -388,11 +343,9 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                         $customerDTO['default_shipping'] = $address->getId();
                         $customerDTO['addresses'][] = $addressDTO;
                     }
-                    $customerDTO['id'] = $customerDTO['entity_id'];
                 }
-                
-                $filteredCustomerData = $this->_filterDTO($customerDTO, array('password', 'password_hash', 'password_confirmation', 'confirmation', 'entity_type_id'));
-                return $this->_result(200, $filteredCustomerData);
+
+                return $this->_result(200, $customerDTO);
             } catch (Exception $err) {
                 return $this->_result(500, $err->getMessage());
             }
