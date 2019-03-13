@@ -66,7 +66,6 @@ class Divante_VueStorefrontBridge_OrderController extends Divante_VueStorefrontB
 
         $quoteObj = $this->requestModel->currentQuote($this->getRequest());
 
-
         if (!$quoteObj->getIsActive()) {
             return $this->_result(500, sprintf('No such entity with id %s', $request->cart_id));
         }

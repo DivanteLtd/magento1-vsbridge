@@ -28,9 +28,9 @@ class Divante_VueStorefrontBridge_Model_Api_Order_Create
     /**
      * Divante_VueStorefrontBridge_Model_Api_Order constructor.
      *
-     * @param Mage_Sales_Model_Quote $quote
+     * @param array $payload
      */
-    public function __construct($payload)
+    public function __construct(array $payload)
     {
         $this->quote     = $payload[0];
         $this->customer  = $payload[1];
