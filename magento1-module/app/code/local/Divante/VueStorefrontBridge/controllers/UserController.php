@@ -63,6 +63,16 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
             return $this->_result(500, 'No e-mail provided');
         }
 
+        if ($flowPassword = Mage::getModel('customer/flowpassword')) {
+            if (!$flowPassword->checkCustomerForgotPasswordFlowEmail($request->email)) {
+                return $this->_result(500, $this->__('You have exceeded requests to times per 24 hours from 1 e-mail.'));
+            }
+
+            if (!$flowPassword->checkCustomerForgotPasswordFlowIp()) {
+                return $this->_result(500, $this->__('You have exceeded requests to times per hour from 1 IP.'));
+            }
+        }
+
         /** @var  $helper */
         $helper = Mage::helper('vsbridge');
 
