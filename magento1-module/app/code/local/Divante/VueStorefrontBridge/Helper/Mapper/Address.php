@@ -1,5 +1,4 @@
 <?php
-require_once('AbstractMapper.php');
 
 /**
  * Divante VueStorefrontBridge AddressMapper Class
@@ -10,7 +9,7 @@ require_once('AbstractMapper.php');
  * @copyright   Copyright (C) 2019
  * @license     MIT License
  */
-class AddressMapper extends AbstractMapper
+class Divante_VueStorefrontBridge_Helper_Mapper_Address extends Divante_VueStorefrontBridge_Helper_Mapper_Abstract
 {
     /**
      * Get AddressDto from Address
@@ -32,27 +31,34 @@ class AddressMapper extends AbstractMapper
         $addressDto['region'] = ['region' => $region];
 
         $streetDto = explode("\n", $addressDto['street']);
-        if(count($streetDto) < 2)
+        if (count($streetDto) < 2) {
             $streetDto[]='';
+        }
 
         $addressDto['street'] = $streetDto;
-        if(!$addressDto['firstname'])
+        if (!$addressDto['firstname']) {
             $addressDto['firstname'] = $customerDto['firstname'];
+        }
 
-        if(!$addressDto['lastname'])
+        if (!$addressDto['lastname']) {
             $addressDto['lastname'] = $customerDto['lastname'];
+        }
 
-        if(!$addressDto['city'])
+        if (!$addressDto['city']) {
             $addressDto['city'] = '';
+        }
 
-        if(!$addressDto['country_id'])
+        if (!$addressDto['country_id']) {
             $addressDto['country_id'] = 'US';
+        }
 
-        if(!$addressDto['postcode'])
+        if (!$addressDto['postcode']) {
             $addressDto['postcode'] = '';
+        }
 
-        if(!$addressDto['telephone'])
+        if (!$addressDto['telephone']) {
             $addressDto['telephone'] = '';
+        }
 
         return $addressDto;
     }

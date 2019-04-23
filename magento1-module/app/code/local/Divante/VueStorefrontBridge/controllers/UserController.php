@@ -1,9 +1,6 @@
 <?php
 require_once('AbstractController.php');
 require_once(__DIR__.'/../helpers/JWT.php');
-require_once(__DIR__.'/../Mapper/CustomerMapper.php');
-require_once(__DIR__.'/../Mapper/AddressMapper.php');
-require_once(__DIR__.'/../Mapper/OrderMapper.php');
 
 class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBridge_AbstractController
 {
@@ -81,8 +78,8 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
 
         try {
             $customer = Mage::getModel('customer/customer')
-                ->setWebsiteId(Mage::app()->getStore()->getWebsiteId())
-                ->loadByEmail($request->email);
+                      ->setWebsiteId(Mage::app()->getStore()->getWebsiteId())
+                      ->loadByEmail($request->email);
 
             if ($customer->getId()) {
                 $customer->sendPasswordResetConfirmationEmail();
@@ -197,11 +194,10 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 ->setOrder('created_at', 'desc');
 
             $ordersDTO = [];
-            $orderMapper = new OrderMapper();
 
             /** @var Mage_Sales_Model_Order $order */
             foreach ($orderCollection as $order) {
-                $orderDTO = $orderMapper->toDto($order);
+                $orderDTO = Mage::helper('vsbridge_mapper/order')->toDto($order);
                 $ordersDTO[] = $orderDTO;
             }
 
@@ -242,10 +238,9 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
             ->setEmail($request->customer->email)
             ->setPassword($request->password);
 
-        try{
+        try {
             $customer->save();
-            $customerMapper = new CustomerMapper();
-            $customerDto = $customerMapper->toDto($customer);
+            $customerDto = Mage::helper('vsbridge_mapper/customer')->toDto($customer);
 
             return $this->_result(200, $customerDto); // TODO: add support for 'Refresh-token'
         } catch (Exception $e) {
@@ -274,8 +269,8 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     $updatedCustomer['entity_id'] = $customer->getId();
                     
                     $customer->setData('firstname', $updatedCustomer['firstname'])
-                            ->setData('lastname', $updatedCustomer['lastname'])
-                            ->setData('email', $updatedCustomer['email']);
+                        ->setData('lastname', $updatedCustomer['lastname'])
+                        ->setData('email', $updatedCustomer['email']);
 
                     if (isset($updatedCustomer['dob'])) {
                         $customer->setData('dob', $updatedCustomer['dob']);
@@ -315,8 +310,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     }
                 }
                 $customer->load($customer->getId());
-                $customerMapper = new CustomerMapper();
-                $customerDTO = $customerMapper->toDto($customer);
+                $customerDTO = Mage::helper('vsbridge_mapper/customer')->toDto($customer);
 
                 $subscription = Mage::getModel('newsletter/subscriber')->loadByCustomer($customer);
                 $customerDTO['is_subscribed'] = $subscription->isSubscribed();
@@ -325,10 +319,9 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 $defaultBilling  = $customer->getDefaultBilling();
                 $defaultShipping = $customer->getDefaultShipping();
                 $customerDTO['addresses'] = array();
-                $addressMapper = new AddressMapper();
 
                 foreach ($allAddress as $address) {
-                    $addressDTO = $addressMapper->toDto($address);
+                    $addressDTO = Mage::helper('vsbridge_mapper/address')->toDto($address);
 
                     if($defaultBilling == $address->getId() || $address->getId() == $updatedBillingId) {
                         // TODO: Street + Region fields (region_code should be)

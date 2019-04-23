@@ -1,7 +1,4 @@
 <?php
-require_once('AbstractMapper.php');
-require_once('OrderItemMapper.php');
-require_once('PaymentMapper.php');
 
 /**
  * Divante VueStorefrontBridge OrderMapper Class
@@ -12,7 +9,7 @@ require_once('PaymentMapper.php');
  * @copyright   Copyright (C) 2019
  * @license     MIT License
  */
-class OrderMapper extends AbstractMapper
+class Divante_VueStorefrontBridge_Helper_Mapper_Order extends Divante_VueStorefrontBridge_Helper_Mapper_Abstract
 {
     /**
      * Get OrderDto from Order
@@ -29,9 +26,8 @@ class OrderMapper extends AbstractMapper
         /** @var Mage_Catalog_Model_Resource_Product $resourceModel */
         $resourceModel = Mage::getResourceModel('catalog/product');
 
-        $orderItemMapper = new OrderItemMapper();
-        foreach($order->getAllVisibleItems() as $item) {
-            $itemDto = $orderItemMapper->toDto($item);
+        foreach ($order->getAllVisibleItems() as $item) {
+            $itemDto = Mage::helper('vsbridge_mapper/orderitem')->toDto($item);
             $itemDto['thumbnail'] = null;
 
             $image = $resourceModel->getAttributeRawValue(
@@ -47,9 +43,7 @@ class OrderMapper extends AbstractMapper
             $orderDto['items'][] = $itemDto;
         }
 
-        $paymentMapper = new PaymentMapper();
-        $payment = $order->getPayment();
-        $paymentDto = $paymentMapper->toDto($payment);
+        $paymentDto = Mage::helper('vsbridge_mapper/payment')->toDto($order->getPayment());
         $orderDto['payment'] = $paymentDto;
 
         return $orderDto;

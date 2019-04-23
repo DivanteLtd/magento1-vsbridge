@@ -1,5 +1,4 @@
 <?php
-require_once('AbstractMapper.php');
 
 /**
  * Divante VueStorefrontBridge CustomerMapper Class
@@ -10,7 +9,7 @@ require_once('AbstractMapper.php');
  * @copyright   Copyright (C) 2019
  * @license     MIT License
  */
-class CustomerMapper extends AbstractMapper
+class Divante_VueStorefrontBridge_Helper_Mapper_Customer extends Divante_VueStorefrontBridge_Helper_Mapper_Abstract
 {
     /**
      * Get CustomerDto from Customer

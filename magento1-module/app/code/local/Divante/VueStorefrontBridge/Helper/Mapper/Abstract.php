@@ -8,7 +8,7 @@
  * @copyright   Copyright (C) 2019
  * @license     MIT License
  */
-abstract class AbstractMapper
+abstract class Divante_VueStorefrontBridge_Helper_Mapper_Abstract extends Mage_Core_Helper_Abstract
 {
     /**
      * Get and process Dto from entity

@@ -1,8 +1,7 @@
 <?php
-require_once('AbstractMapper.php');
 
 /**
- * Divante VueStorefrontBridge PaymentMapper Class
+ * Divante VueStorefrontBridge OrderItemMapper Class
  *
  * @category    Divante
  * @package     VueStorefrontBridge
@@ -10,20 +9,20 @@ require_once('AbstractMapper.php');
  * @copyright   Copyright (C) 2019
  * @license     MIT License
  */
-class PaymentMapper extends AbstractMapper
+class Divante_VueStorefrontBridge_Helper_Mapper_OrderItem extends Divante_VueStorefrontBridge_Helper_Mapper_Abstract
 {
     /**
-     * Get PaymentDto from Payment
+     * Get OrderItemDto from OrderItem
      *
-     * @param Mage_Sales_Model_Order_Payment $payment
+     * @param Mage_Sales_Model_Order_Item $orderItem
      * @return array
      */
-    protected function getDto($payment)
+    protected function getDto($orderItem)
     {
-        $paymentDto = $payment->getData();
-        $paymentDto['method_title'] = $payment->getMethodInstance()->getTitle();
+        $orderItemDto = $orderItem->getData();
+        $orderItemDto['id'] = $orderItemDto['item_id'];
 
-        return $paymentDto;
+        return $orderItemDto;
     }
 
     /**

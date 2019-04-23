@@ -26,6 +26,9 @@
             <vsbridge>
                 <class>Divante_VueStorefrontBridge_Helper</class>
             </vsbridge>
+            <vsbridge_mapper>
+                <class>Divante_VueStorefrontBridge_Helper_Mapper</class>
+            </vsbridge_mapper>
         </helpers>
     </global>
     <default>

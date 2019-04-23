@@ -1,7 +1,5 @@
 <?php
 require_once('AbstractController.php');
-require_once(__DIR__.'/../helpers/JWT.php');
-require_once(__DIR__.'/../Mapper/StockMapper.php');
 
 /**
  * Class Divante_VueStorefrontBridge_StockController
@@ -12,7 +10,6 @@ require_once(__DIR__.'/../Mapper/StockMapper.php');
  */
 class Divante_VueStorefrontBridge_StockController extends Divante_VueStorefrontBridge_AbstractController
 {
-
     /**
      * Retrieve stock data by product sku
      */
@@ -35,8 +32,7 @@ class Divante_VueStorefrontBridge_StockController extends Divante_VueStorefrontB
             $product_id = Mage::getModel('catalog/product')->getIdBySku($sku);
             $product = Mage::getModel('catalog/product')->load($product_id);
             $stock = $product->getStockItem();
-            $stockMapper = new StockMapper();
-            $stockDto = $stockMapper->toDto($product->getStockItem());
+            $stockDto = Mage::helper('vsbridge_mapper/stock')->toDto($product->getStockItem());
 
             return $this->_result(200, $stockDto);
         } catch (Exception $err) {

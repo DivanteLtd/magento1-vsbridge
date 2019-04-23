@@ -1,5 +1,4 @@
 <?php
-require_once('AbstraMapper.php');
 
 /**
  * Divante VueStorefrontBridge StockMapper Class
@@ -10,7 +9,7 @@ require_once('AbstraMapper.php');
  * @copyright   Copyright (C) 2019
  * @license     MIT License
  */
-class StockMapper extends AbstractMapper
+class Divante_VueStorefrontBridge_Helper_Mapper_Stock extends Divante_VueStorefrontBridge_Helper_Mapper_Abstract
 {
     /**
      * Get StockDto from StockItem
