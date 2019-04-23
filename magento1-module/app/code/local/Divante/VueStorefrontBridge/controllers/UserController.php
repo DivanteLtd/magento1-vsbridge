@@ -78,8 +78,8 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
 
         try {
             $customer = Mage::getModel('customer/customer')
-                      ->setWebsiteId(Mage::app()->getStore()->getWebsiteId())
-                      ->loadByEmail($request->email);
+                ->setWebsiteId(Mage::app()->getStore()->getWebsiteId())
+                ->loadByEmail($request->email);
 
             if ($customer->getId()) {
                 $customer->sendPasswordResetConfirmationEmail();
@@ -194,11 +194,43 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 ->setOrder('created_at', 'desc');
 
             $ordersDTO = [];
+            /** @var Mage_Catalog_Model_Resource_Product $resourceModel */
+            $resourceModel = Mage::getResourceModel('catalog/product');
 
             /** @var Mage_Sales_Model_Order $order */
             foreach ($orderCollection as $order) {
-                $orderDTO = Mage::helper('vsbridge_mapper/order')->toDto($order);
-                $ordersDTO[] = $orderDTO;
+                $orderDTO = $order->getData();
+                $orderDTO['id'] = $orderDTO['entity_id'];
+
+                // Order items
+                $orderDTO['items'] = [];
+                foreach ($order->getAllVisibleItems() as $item) {
+                    $itemDTO = $item->getData();
+                    $itemDTO['id'] = $itemDTO['item_id'];
+                    $itemDTO['thumbnail'] = null;
+
+                    $image = $resourceModel->getAttributeRawValue(
+                        $item->getProductId(),
+                        'thumbnail',
+                        $order->getStoreId()
+                    );
+
+                    if ($image) {
+                        $itemDTO['thumbnail'] = $image;
+                    }
+
+                    $itemDTO = Mage::helper('vsbridge_mapper/orderItem')->filterDto($itemDTO);
+                    $orderDTO['items'][] = $itemDTO;
+                }
+
+                // Order payment
+                $paymentDTO = $order->getPayment()->toArray();
+                $paymentDTO['method_title'] = $order->getPayment()->getMethodInstance()->getTitle();
+                $paymentDTO = Mage::helper('vsbridge_mapper/payment')->filterDto($paymentDTO);
+                $orderDTO['payment'] = $paymentDTO;
+
+                // Order
+                $ordersDTO[] = Mage::helper('vsbridge_mapper/order')->filterDto($orderDTO);
             }
 
             return $this->_result(200, array('items' => $ordersDTO));
@@ -231,7 +263,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
         $store = Mage::app()->getStore();
 
         $customer = Mage::getModel("customer/customer");
-        $customer   ->setWebsiteId($websiteId)
+        $customer->setWebsiteId($websiteId)
             ->setStore($store)
             ->setFirstname($request->customer->firstname)
             ->setLastname($request->customer->lastname)
@@ -240,18 +272,21 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
 
         try {
             $customer->save();
-            $customerDto = Mage::helper('vsbridge_mapper/customer')->toDto($customer);
 
-            return $this->_result(200, $customerDto); // TODO: add support for 'Refresh-token'
+            $customerDTO = $customer->getData();
+            $customerDTO = Mage::helper('vsbridge_mapper/customer')->filterDto($customerDTO);
+
+            return $this->_result(200, $customerDTO); // TODO: add support for 'Refresh-token'
         } catch (Exception $e) {
             return $this->_result(500, $e->getMessage());
         }
     }
 
 
-    public function meAction(){
+    public function meAction()
+    {
         $customer = $this->_currentCustomer($this->getRequest());
-        if(!$customer) {
+        if (!$customer) {
             return $this->_result(500, 'User is not authroized to access self');
         } else {
             $updatedShippingId = 0;
@@ -260,17 +295,16 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
             try {
                 if ($this->_checkHttpMethod(array('POST'))) { // modify user data
                     $request = _object_to_array($this->_getJsonBody());
-                    if(!$request['customer']) {
+                    if (!$request['customer']) {
                         return $this->_result(500, 'No customer data provided!');
                     }
 
-                    //die(print_r($customer->getData(), true));
                     $updatedCustomer = $request['customer'];
                     $updatedCustomer['entity_id'] = $customer->getId();
-                    
+
                     $customer->setData('firstname', $updatedCustomer['firstname'])
-                        ->setData('lastname', $updatedCustomer['lastname'])
-                        ->setData('email', $updatedCustomer['email']);
+                            ->setData('lastname', $updatedCustomer['lastname'])
+                            ->setData('email', $updatedCustomer['email']);
 
                     if (isset($updatedCustomer['dob'])) {
                         $customer->setData('dob', $updatedCustomer['dob']);
@@ -279,15 +313,16 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     $customer->save();
 
                     if ($updatedCustomer['addresses']) {
-                        foreach($updatedCustomer['addresses'] as $updatedAdress) {
+                        foreach ($updatedCustomer['addresses'] as $updatedAdress) {
                             $updatedAdress['region'] = $updatedAdress['region']['region'];
 
-                            if($updatedAdress['default_billing']) {
+                            if ($updatedAdress['default_billing']) {
                                 $bAddressId = $customer->getDefaultBilling();
                                 $bAddress = Mage::getModel('customer/address');
-                                
-                                if($bAddressId) 
+
+                                if ($bAddressId) {
                                     $bAddress->load($bAddressId);
+                                }
 
                                 $updatedAdress['parent_id'] = $customer->getId();
 
@@ -295,23 +330,23 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                                 $bAddress->setData($updatedAdress)->setIsDefaultBilling(1)->save();
                                 $updatedBillingId = $bAddress->getId();
                             }
-                            if($updatedAdress['default_shipping']) {
+                            if ($updatedAdress['default_shipping']) {
                                 $sAddressId = $customer->getDefaultShipping();
                                 $sAddress = Mage::getModel('customer/address');
-                                
-                                if($sAddressId) 
-                                    $sAddress->load($sAddressId);
 
-                                $updatedAdress['parent_id'] = $customer->getId();           
+                                if ($sAddressId) {
+                                    $sAddress->load($sAddressId);
+                                }
+
+                                $updatedAdress['parent_id'] = $customer->getId();
                                 $sAddress->setData($updatedAdress)->setIsDefaultShipping(1)->save();
                                 $updatedShippingId = $sAddress->getId();
-                            }                        
+                            }
                         }
                     }
                 }
                 $customer->load($customer->getId());
-                $customerDTO = Mage::helper('vsbridge_mapper/customer')->toDto($customer);
-
+                $customerDTO = $customer->getData();
                 $subscription = Mage::getModel('newsletter/subscriber')->loadByCustomer($customer);
                 $customerDTO['is_subscribed'] = $subscription->isSubscribed();
 
@@ -321,21 +356,55 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 $customerDTO['addresses'] = array();
 
                 foreach ($allAddress as $address) {
-                    $addressDTO = Mage::helper('vsbridge_mapper/address')->toDto($address);
+                    $addressDTO = $address->getData();
+                    $addressDTO['id'] = $addressDTO['entity_id'];
+
+                    $region = null;
+
+                    if (isset($addressDTO['region'])) {
+                        $region = $addressDTO['region'];
+                    }
+
+                    $addressDTO['region'] = ['region' => $region];
+
+                    $streetDTO = explode("\n", $addressDTO['street']);
+                    if(count($streetDTO) < 2)
+                        $streetDTO[]='';
+
+                    $addressDTO['street'] = $streetDTO;
+                    if(!$addressDTO['firstname'])
+                        $addressDTO['firstname'] = $customerDTO['firstname'];
+                    if(!$addressDTO['lastname'])
+                        $addressDTO['lastname'] = $customerDTO['lastname'];
+                    if(!$addressDTO['city'])
+                        $addressDTO['city'] = '';
+                    if(!$addressDTO['country_id'])
+                        $addressDTO['country_id'] = 'US';                        
+                    if(!$addressDTO['postcode'])
+                        $addressDTO['postcode'] = '';          
+                    if(!$addressDTO['telephone'])
+                        $addressDTO['telephone'] = '';                                
 
                     if($defaultBilling == $address->getId() || $address->getId() == $updatedBillingId) {
                         // TODO: Street + Region fields (region_code should be)
 
                         // its customer default billing address
                         $addressDTO['default_billing'] = true;
+                        $addressDTO = Mage::helper('vsbridge_mapper/address')->filterDto($addressDTO);
+
                         $customerDTO['default_billing'] = $address->getId();
                         $customerDTO['addresses'][] = $addressDTO;
-                    } else if($defaultShipping == $address->getId()|| $address->getId() == $updatedShippingId) {
+                    } elseif ($defaultShipping == $address->getId()|| $address->getId() == $updatedShippingId) {
                         // its customer default shipping address
                         $addressDTO['default_shipping'] = true;
+                        $addressDTO = Mage::helper('vsbridge_mapper/address')->filterDto($addressDTO);
+
                         $customerDTO['default_shipping'] = $address->getId();
                         $customerDTO['addresses'][] = $addressDTO;
                     }
+
+                    $customerDTO['id'] = $customerDTO['entity_id'];
+                    $customerDTO = Mage::helper('vsbridge_mapper/customer')->filterDto($customerDTO);
                 }
 
                 return $this->_result(200, $customerDTO);

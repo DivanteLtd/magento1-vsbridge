@@ -13,27 +13,40 @@ abstract class Divante_VueStorefrontBridge_Helper_Mapper_Abstract extends Mage_C
     /**
      * Get and process Dto from entity
      *
-     * @param Varien_Object $entity
+     * @param array $initialDto
      *
      * @return array
      */
-    final public function toDto($entity)
+    final public function filterDto($initialDto)
     {
-        $dto = $this->getDto($entity);
-        $blacklist = $this->getBlacklist();
-        $toIntList = $this->getAttributesToCastInt();
+        $dto        = $this->customDtoFiltering($initialDto);
+        $blacklist  = $this->getBlacklist();
 
         foreach ($dto as $key => $value) {
             if ($blacklist && in_array($key, $blacklist)) {
-                unset ($dto[$key]);
+                unset($dto[$key]);
             } else {
-                if (strstr($key, 'is_') || strstr($key, 'has_') || strstr($key, 'use_') || strstr($key, 'enable_')) {
-                    $dto[$key] = boolval($value);
+                // If beginning by "use", "has", ... , then must be a boolean (can be overriden using cast array)
+                if (preg_match('#^(use|has|is|enable|disable)_.*$#', $key)) {
+                    $dto[$key] = $dto[$key] != null ? boolval($value) : null;
+                }
+
+                // If ending by "id", then must be an integer (can be overriden using cast array)
+                if (preg_match('#^.*_?id$#', $key)) {
+                    $dto[$key] = $dto[$key] != null ? intval($value) : null;
                 }
             }
 
-            if ($toIntList && in_array($key, $toIntList)) {
+            if (in_array($key, $this->getAttributesToCastInt())) {
                 $dto[$key] = $dto[$key] != null ? intval($dto[$key]) : null;
+            }
+
+            if (in_array($key, $this->getAttributesToCastBool())) {
+                $dto[$key] = $dto[$key] != null ? boolval($dto[$key]) : null;
+            }
+
+            if (in_array($key, $this->getAttributesToCastStr())) {
+                $dto[$key] = $dto[$key] != null ? strval($dto[$key]) : null;
             }
         }
 
@@ -41,25 +54,54 @@ abstract class Divante_VueStorefrontBridge_Helper_Mapper_Abstract extends Mage_C
     }
 
     /**
-     * Get Dto from entity
+     * Apply custom dto filtering
      *
-     * @param Varien_Object $entity
+     * @param array $dto
      *
      * @return array
      */
-    abstract protected function getDto($entity);
+    protected function customDtoFiltering($dto)
+    {
+        return $dto;
+    }
 
     /**
      * Get Dto attribute blacklist
      *
      * @return array
      */
-    abstract protected function getBlacklist();
+    protected function getBlacklist()
+    {
+        return [];
+    }
 
     /**
      * Get attribute list to cast to integer
      *
      * @return array
      */
-    abstract protected function getAttributesToCastInt();
+    protected function getAttributesToCastInt()
+    {
+        return [];
+    }
+
+    /**
+     * Get attribute list to cast to boolean
+     *
+     * @return array
+     */
+    protected function getAttributesToCastBool()
+    {
+        return [];
+    }
+
+    /**
+     * Get attribute list to cast to string
+     *
+     * @return array
+     */
+    protected function getAttributesToCastStr()
+    {
+        return [];
+    }
 }

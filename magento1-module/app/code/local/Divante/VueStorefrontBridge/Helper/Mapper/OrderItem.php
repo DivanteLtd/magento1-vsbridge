@@ -11,35 +11,4 @@
  */
 class Divante_VueStorefrontBridge_Helper_Mapper_OrderItem extends Divante_VueStorefrontBridge_Helper_Mapper_Abstract
 {
-    /**
-     * Get OrderItemDto from OrderItem
-     *
-     * @param Mage_Sales_Model_Order_Item $orderItem
-     * @return array
-     */
-    protected function getDto($orderItem)
-    {
-        $orderItemDto = $orderItem->getData();
-        $orderItemDto['id'] = $orderItemDto['item_id'];
-
-        return $orderItemDto;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function getBlacklist()
-    {
-        return [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function getAttributesToCastInt()
-    {
-        return [
-            'entity_id'
-        ];
-    }
 }
