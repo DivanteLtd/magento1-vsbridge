@@ -22,9 +22,34 @@ abstract class Divante_VueStorefrontBridge_Helper_Mapper_Abstract extends Mage_C
         $dto = $this->customDtoFiltering($initialDto);
 
         foreach ($dto as $key => $value) {
+            $isCustom = false;
+
             if (in_array($key, $this->getBlacklist())) {
                 unset($dto[$key]);
-            } else {
+                continue;
+            }
+
+            if (in_array($key, $this->getAttributesToCastInt())) {
+                $dto[$key] = $dto[$key] != null ? intval($dto[$key]) : null;
+                $isCustom = true;
+            }
+
+            if (in_array($key, $this->getAttributesToCastBool())) {
+                $dto[$key] = $dto[$key] != null ? boolval($dto[$key]) : null;
+                $isCustom = true;
+            }
+
+            if (in_array($key, $this->getAttributesToCastStr())) {
+                $dto[$key] = $dto[$key] != null ? strval($dto[$key]) : null;
+                $isCustom = true;
+            }
+
+            if (in_array($key, $this->getAttributesToCastFloat())) {
+                $dto[$key] = $dto[$key] != null ? floatval($dto[$key]) : null;
+                $isCustom = true;
+            }
+
+            if (!$isCustom) {
                 // If beginning by "use", "has", ... , then must be a boolean (can be overriden using cast array)
                 if (preg_match('#^(use|has|is|enable|disable)_.*$#', $key)) {
                     $dto[$key] = $dto[$key] != null ? boolval($value) : null;
@@ -34,22 +59,6 @@ abstract class Divante_VueStorefrontBridge_Helper_Mapper_Abstract extends Mage_C
                 if (preg_match('#^.*_?id$#', $key)) {
                     $dto[$key] = $dto[$key] != null ? intval($value) : null;
                 }
-            }
-
-            if (in_array($key, $this->getAttributesToCastInt())) {
-                $dto[$key] = $dto[$key] != null ? intval($dto[$key]) : null;
-            }
-
-            if (in_array($key, $this->getAttributesToCastBool())) {
-                $dto[$key] = $dto[$key] != null ? boolval($dto[$key]) : null;
-            }
-
-            if (in_array($key, $this->getAttributesToCastStr())) {
-                $dto[$key] = $dto[$key] != null ? strval($dto[$key]) : null;
-            }
-
-            if (in_array($key, $this->getAttributesToCastFloat())) {
-                $dto[$key] = $dto[$key] != null ? floatval($dto[$key]) : null;
             }
         }
 

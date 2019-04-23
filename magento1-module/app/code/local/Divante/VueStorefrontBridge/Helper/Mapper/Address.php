@@ -14,6 +14,16 @@ class Divante_VueStorefrontBridge_Helper_Mapper_Address extends Divante_VueStore
     /**
      * @inheritdoc
      */
+    protected function getAttributesToCastStr()
+    {
+        return [
+            'country_id'
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function getAttributesToCastBool()
     {
         return [
