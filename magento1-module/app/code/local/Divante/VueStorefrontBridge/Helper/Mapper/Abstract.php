@@ -19,11 +19,10 @@ abstract class Divante_VueStorefrontBridge_Helper_Mapper_Abstract extends Mage_C
      */
     final public function filterDto($initialDto)
     {
-        $dto        = $this->customDtoFiltering($initialDto);
-        $blacklist  = $this->getBlacklist();
+        $dto = $this->customDtoFiltering($initialDto);
 
         foreach ($dto as $key => $value) {
-            if ($blacklist && in_array($key, $blacklist)) {
+            if (in_array($key, $this->getBlacklist())) {
                 unset($dto[$key]);
             } else {
                 // If beginning by "use", "has", ... , then must be a boolean (can be overriden using cast array)
@@ -47,6 +46,10 @@ abstract class Divante_VueStorefrontBridge_Helper_Mapper_Abstract extends Mage_C
 
             if (in_array($key, $this->getAttributesToCastStr())) {
                 $dto[$key] = $dto[$key] != null ? strval($dto[$key]) : null;
+            }
+
+            if (in_array($key, $this->getAttributesToCastFloat())) {
+                $dto[$key] = $dto[$key] != null ? floatval($dto[$key]) : null;
             }
         }
 
@@ -101,6 +104,16 @@ abstract class Divante_VueStorefrontBridge_Helper_Mapper_Abstract extends Mage_C
      * @return array
      */
     protected function getAttributesToCastStr()
+    {
+        return [];
+    }
+
+    /**
+     * Get attribute list to cast to float
+     *
+     * @return array
+     */
+    protected function getAttributesToCastFloat()
     {
         return [];
     }

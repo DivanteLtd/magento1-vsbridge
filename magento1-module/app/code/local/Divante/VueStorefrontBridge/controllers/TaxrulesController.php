@@ -32,23 +32,24 @@ class Divante_VueStorefrontBridge_TaxrulesController extends Divante_VueStorefro
             $taxRules = array();
             if ($collection->getSize()) {
                 foreach ($collection as $rule) {
-                    $taxRuleDTO       = $rule->getData();
-                    $taxRuleDTO['id'] = intval($taxRuleDTO['tax_calculation_rule_id']);
-                    unset($taxRuleDTO['tax_calculation_rule_id']);
+                    $taxRuleDTO = $rule->getData();
+
+                    $taxRuleDTO['id'] = $taxRuleDTO['tax_calculation_rule_id'];
                     $taxRuleDTO['tax_rates_ids'] = $taxRuleDTO['tax_rates'];
-                    unset($taxRuleDTO['tax_rates']);
                     $taxRuleDTO['product_tax_class_ids'] = $taxRuleDTO['product_tax_classes'];
-                    unset($taxRuleDTO['product_tax_classes']);
                     $taxRuleDTO['customer_tax_class_ids'] = $taxRuleDTO['customer_tax_classes'];
-                    unset($taxRuleDTO['customer_tax_classes']);
                     $taxRuleDTO['rates'] = [];
+
                     foreach ($taxRuleDTO['tax_rates_ids'] as $rateId) {
                         $rate->load($rateId);
                         $rateDTO       = $rate->getData();
-                        $rateDTO['id'] = intval($rateDTO['tax_calculation_rate_id']);
-                        unset($rateDTO['tax_calculation_rate_id']);
+                        $rateDTO['id'] = $rateDTO['tax_calculation_rate_id'];
+                        $rateDTO = Mage::helper('vsbridge_mapper/taxruleRate')->filterDto($rateDTO);
+
                         $taxRuleDTO['rates'][] = $rateDTO;
                     }
+
+                    $taxRuleDTO = Mage::helper('vsbridge_mapper/taxrule')->filterDto($taxRuleDTO);
                     $taxRules[] = $taxRuleDTO;
                 }
             }
