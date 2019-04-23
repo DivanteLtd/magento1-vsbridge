@@ -415,7 +415,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
 
                     foreach ($rates as $rate) {
                         $rateItem = $rate->getData();
-                        $rateItem['carrier_title'] = $carrierName;
+                        $rateItem['method_title'] = $carrierName;
                         $rateItem['carrier_code'] = $carrierCode;
                         $rateItem['method_code'] = $rateItem['method'];
                         $rateItem['amount'] = $rateItem['price'];
