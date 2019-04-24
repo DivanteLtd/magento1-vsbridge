@@ -402,10 +402,10 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                         $customerDTO['default_shipping'] = $address->getId();
                         $customerDTO['addresses'][] = $addressDTO;
                     }
-
-                    $customerDTO['id'] = $customerDTO['entity_id'];
-                    $customerDTO = Mage::helper('vsbridge_mapper/customer')->filterDto($customerDTO);
                 }
+
+                $customerDTO['id'] = $customerDTO['entity_id'];
+                $customerDTO = Mage::helper('vsbridge_mapper/customer')->filterDto($customerDTO);
 
                 return $this->_result(200, $customerDTO);
             } catch (Exception $err) {
