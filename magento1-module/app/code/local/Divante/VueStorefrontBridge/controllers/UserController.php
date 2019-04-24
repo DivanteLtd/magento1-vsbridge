@@ -225,6 +225,8 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 $orderDTO['payment'] = $payment->toArray();
                 $orderDTO['payment']['additional_information'][0] = $payment->getMethodInstance()->getTitle();
 
+                //TODO Fix tax values: returns NaN on front
+
                 //TODO explode street by linebreak with mapper when mapper merged
                 $shippingAddress = $order->getShippingAddress()->getData();
                 $shippingAddress['street'] = explode("\n", $shippingAddress['street']);
