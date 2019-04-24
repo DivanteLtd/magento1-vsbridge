@@ -160,7 +160,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                         } else {
                             return $this->_result(500, 'You did not sign in correctly or your account is temporarily disabled.');
                         }
-                    }                
+                    }
                 }
             }
         } catch (Exception $err) {
@@ -196,7 +196,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
             $ordersDTO = [];
             /** @var Mage_Catalog_Model_Resource_Product $resourceModel */
             $resourceModel = Mage::getResourceModel('catalog/product');
-            
+
             /** @var Mage_Sales_Model_Order $order */
             foreach ($orderCollection as $order) {
                 $orderDTO = $order->getData();
@@ -221,11 +221,11 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     $orderDTO['items'][] = $itemDTO;
                 }
 
+                $orderDTO['discount_tax_compensation_amount'] = $orderDTO['hidden_tax_amount'];
+
                 $payment = $order->getPayment();
                 $orderDTO['payment'] = $payment->toArray();
                 $orderDTO['payment']['additional_information'][0] = $payment->getMethodInstance()->getTitle();
-
-                //TODO Fix tax values: returns NaN on front
 
                 //TODO explode street by linebreak with mapper when mapper merged
                 $shippingAddress = $order->getShippingAddress()->getData();
@@ -306,7 +306,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     //die(print_r($customer->getData(), true));
                     $updatedCustomer = $request['customer'];
                     $updatedCustomer['entity_id'] = $customer->getId();
-                    
+
                     $customer->setData('firstname', $updatedCustomer['firstname'])
                             ->setData('lastname', $updatedCustomer['lastname'])
                             ->setData('email', $updatedCustomer['email']);
@@ -324,8 +324,8 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                             if($updatedAdress['default_billing']) {
                                 $bAddressId = $customer->getDefaultBilling();
                                 $bAddress = Mage::getModel('customer/address');
-                                
-                                if($bAddressId) 
+
+                                if($bAddressId)
                                     $bAddress->load($bAddressId);
 
                                 $updatedAdress['parent_id'] = $customer->getId();
@@ -337,14 +337,14 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                             if($updatedAdress['default_shipping']) {
                                 $sAddressId = $customer->getDefaultShipping();
                                 $sAddress = Mage::getModel('customer/address');
-                                
-                                if($sAddressId) 
+
+                                if($sAddressId)
                                     $sAddress->load($sAddressId);
 
-                                $updatedAdress['parent_id'] = $customer->getId();           
+                                $updatedAdress['parent_id'] = $customer->getId();
                                 $sAddress->setData($updatedAdress)->setIsDefaultShipping(1)->save();
                                 $updatedShippingId = $sAddress->getId();
-                            }                        
+                            }
                         }
                     }
                 }
@@ -382,11 +382,11 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     if(!$addressDTO['city'])
                         $addressDTO['city'] = '';
                     if(!$addressDTO['country_id'])
-                        $addressDTO['country_id'] = 'US';                        
+                        $addressDTO['country_id'] = 'US';
                     if(!$addressDTO['postcode'])
-                        $addressDTO['postcode'] = '';          
+                        $addressDTO['postcode'] = '';
                     if(!$addressDTO['telephone'])
-                        $addressDTO['telephone'] = '';                                
+                        $addressDTO['telephone'] = '';
 
                     if($defaultBilling == $address->getId() || $address->getId() == $updatedBillingId) {
                         // TODO: Street + Region fields (region_code should be)
@@ -404,7 +404,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 }
 
                 $customerDTO['id'] = $customerDTO['entity_id'];
-                
+
                 $filteredCustomerData = $this->_filterDTO($customerDTO, array('password', 'password_hash', 'password_confirmation', 'confirmation', 'entity_type_id'));
                 return $this->_result(200, $filteredCustomerData);
             } catch (Exception $err) {
