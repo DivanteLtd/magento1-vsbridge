@@ -224,6 +224,17 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 $payment = $order->getPayment();
                 $orderDTO['payment'] = $payment->toArray();
                 $orderDTO['payment']['method_title'] = $payment->getMethodInstance()->getTitle();
+
+                //TODO explode street by linebreak with mapper when mapper merged
+                $shippingAddress = $order->getShippingAddress()->getData();
+                $shippingAddress['street'] = explode("\n", $shippingAddress['street']);
+                $orderDTO['extension_attributes']['shipping_assignments'][0]['shipping']['address'] = $shippingAddress;
+
+                //TODO explode street by linebreak with mapper when mapper merged
+                $billingAddress = $order->getBillingAddress()->getData();
+                $billingAddress['street'] = explode("\n", $billingAddress['street']);
+                $orderDTO['billing_address'] = $billingAddress; //TODO explode street by linebreak when mapper merged
+
                 $ordersDTO[] = $orderDTO;
             }
 
