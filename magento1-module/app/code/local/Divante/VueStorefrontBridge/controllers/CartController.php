@@ -112,7 +112,10 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
             $items = [];
 
             foreach ($quoteObj->getAllVisibleItems() as $item) {
-                $items[] = $this->cartModel->getItemAsArray($item);
+                $quoteItemDTO = $this->cartModel->getItemAsArray($item);
+                $quoteItemDTO = Mage::helper('vsbridge_mapper/quoteItem')->filterDto($quoteItemDTO);
+
+                $items[] = $quoteItemDTO;
             }
 
             return $this->_result(200, $items);
