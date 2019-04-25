@@ -14,6 +14,18 @@ class Divante_VueStorefrontBridge_Helper_Mapper_Address extends Divante_VueStore
     /**
      * @inheritdoc
      */
+    protected function customDtoFiltering($dto)
+    {
+        if (!is_array($dto['street'])) {
+            $dto['street'] = explode("\n", $dto['street']);
+        }
+
+        return $dto;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function getAttributesToCastStr()
     {
         return [

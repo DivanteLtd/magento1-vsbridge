@@ -225,9 +225,18 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
 
                 // Order payment
                 $paymentDTO = $order->getPayment()->toArray();
-                $paymentDTO['method_title'] = $order->getPayment()->getMethodInstance()->getTitle();
+                $paymentDTO['additional_information'][0] = $order->getPayment()->getMethodInstance()->getTitle();
                 $paymentDTO = Mage::helper('vsbridge_mapper/payment')->filterDto($paymentDTO);
                 $orderDTO['payment'] = $paymentDTO;
+
+                // Order addresses
+                $shippingAddressDTO = $order->getShippingAddress()->getData();
+                $shippingAddressDTO = Mage::helper('vsbridge_mapper/address')->filterDto($shippingAddressDTO);
+                $orderDTO['extension_attributes']['shipping_assignments'][0]['shipping']['address'] = $shippingAddressDTO;
+
+                $billingAddressDTO = $order->getBillingAddress()->getData();
+                $billingAddressDTO = Mage::helper('vsbridge_mapper/address')->filterDto($billingAddressDTO);
+                $orderDTO['billing_address'] = $billingAddressDTO;
 
                 // Order
                 $ordersDTO[] = Mage::helper('vsbridge_mapper/order')->filterDto($orderDTO);
