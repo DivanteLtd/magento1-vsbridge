@@ -160,7 +160,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                         } else {
                             return $this->_result(500, 'You did not sign in correctly or your account is temporarily disabled.');
                         }
-                    }                
+                    }
                 }
             }
         } catch (Exception $err) {
@@ -222,6 +222,9 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     $itemDTO = Mage::helper('vsbridge_mapper/orderItem')->filterDto($itemDTO);
                     $orderDTO['items'][] = $itemDTO;
                 }
+
+                // Order tax
+                $orderDTO['discount_tax_compensation_amount'] = $orderDTO['hidden_tax_amount'];
 
                 // Order payment
                 $paymentDTO = $order->getPayment()->toArray();
@@ -388,11 +391,11 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     if(!$addressDTO['city'])
                         $addressDTO['city'] = '';
                     if(!$addressDTO['country_id'])
-                        $addressDTO['country_id'] = 'US';                        
+                        $addressDTO['country_id'] = 'US';
                     if(!$addressDTO['postcode'])
-                        $addressDTO['postcode'] = '';          
+                        $addressDTO['postcode'] = '';
                     if(!$addressDTO['telephone'])
-                        $addressDTO['telephone'] = '';                                
+                        $addressDTO['telephone'] = '';
 
                     if($defaultBilling == $address->getId() || $address->getId() == $updatedBillingId) {
                         // TODO: Street + Region fields (region_code should be)
