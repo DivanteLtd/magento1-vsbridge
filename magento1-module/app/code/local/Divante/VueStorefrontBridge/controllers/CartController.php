@@ -85,7 +85,7 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
 
             return $this->_result(
                 200,
-                $customer ? $quoteObj->getId() : JWT::encode(['cartId' => $quoteObj->getId()], $secretKey)
+                JWT::encode(['cartId' => $quoteObj->getId()], $secretKey)
             );
         } catch (Exception $err) {
             return $this->_result(500, $err->getMessage());
