@@ -5,8 +5,6 @@
             <version>1.0.3</version>
         </Divante_VueStorefrontBridge>
     </modules>
-    <global>
-    </global>
     <frontend>
         <routers>
             <vsbridge>
@@ -26,4 +24,16 @@
             </general>
         </vsbridge>
     </default>
+    <global>
+        <models>
+            <divante_vuestorefrontbridge>
+                <class>Divante_VueStorefrontBridge_Model</class>
+            </divante_vuestorefrontbridge>
+        </models>
+        <blocks>
+            <divante_vuestorefrontbridge>
+                <class>Divante_VueStorefrontBridge_Block</class>
+            </divante_vuestorefrontbridge>
+        </blocks>
+    </global>
 </config>
