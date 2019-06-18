@@ -55,7 +55,6 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
         $this->getResponse()->setHeader('Content-Type', 'application/json');
         $this->getResponse()->setHeader('Access-Control-Allow-Origin', '*');
         $this->getResponse()->setHeader('Access-Control-Expose-Headers', 'Link');
-        $this->getResponse()->setHeader('Cache-Control', 'no-cache');
     }
 
     /**
@@ -262,7 +261,10 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
                 ],
                 JSON_NUMERIC_CHECK
             )
-        )->setHttpResponseCode($code)->setHeader('Content-Type', 'application/json');
+        )
+            ->setHttpResponseCode($code)
+            ->setHeader('Content-Type', 'application/json')
+            ->setHeader('Cache-Control', 'no-cache');
     }
 
     /**
