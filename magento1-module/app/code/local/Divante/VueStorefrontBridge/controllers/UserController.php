@@ -293,6 +293,8 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
         if(!$customer) {
             return $this->_result(500, 'User is not authroized to access self');
         } else {
+            $addressHelper = Mage::helper('vsbridge/address');
+
             $updatedShippingId = 0;
             $updatedBillingId = 0;
 
@@ -321,7 +323,21 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                         foreach($updatedCustomer['addresses'] as $updatedAdress) {
                             $updatedAdress['region'] = $updatedAdress['region']['region'];
 
-                            if($updatedAdress['default_billing']) {
+                            if($updatedAdress['delete'] === true) {
+                                try {
+                                    $sAddress = Mage::getModel('customer/address');
+
+                                    $sAddress->load($updatedAdress['entity_id']);
+
+                                    $sAddress->setData($updatedAdress)->delete();
+                                } catch (Throwable $exception) {
+                                    Mage::log(
+                                        'Cloud not load address:' . $updatedAdress['entity_id'] . " to delete it",
+                                        Zend_Log::ERR,
+                                        'vsbridge.log'
+                                    );
+                                }
+                            } elseif($updatedAdress['default_billing']) {
                                 $bAddressId = $customer->getDefaultBilling();
                                 $bAddress = Mage::getModel('customer/address');
 
@@ -329,12 +345,11 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                                     $bAddress->load($bAddressId);
 
                                 $updatedAdress['parent_id'] = $customer->getId();
-
+                                $updatedAdress['street'] = $addressHelper->concatStreetData($updatedAdress['street']);
 
                                 $bAddress->setData($updatedAdress)->setIsDefaultBilling(1)->save();
                                 $updatedBillingId = $bAddress->getId();
-                            }
-                            if($updatedAdress['default_shipping']) {
+                            } elseif($updatedAdress['default_shipping']) {
                                 $sAddressId = $customer->getDefaultShipping();
                                 $sAddress = Mage::getModel('customer/address');
 
@@ -342,10 +357,30 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                                     $sAddress->load($sAddressId);
 
                                 $updatedAdress['parent_id'] = $customer->getId();
+                                $updatedAdress['street'] = $addressHelper->concatStreetData($updatedAdress['street']);
+
                                 $sAddress->setData($updatedAdress)->setIsDefaultShipping(1)->save();
                                 $updatedShippingId = $sAddress->getId();
+                            } else {
+                                $sAddress = Mage::getModel('customer/address');
+
+                                try {
+                                    if (isset($updatedAdress['entity_id']) && !empty($updatedAdress['entity_id'])) {
+                                        $sAddress->load($updatedAdress['entity_id']);
+                                    }
+                                } catch (Exception $exception) {
+                                    Mage::log(
+                                        'Cloud not load address:' . $updatedAdress['entity_id'] . " for updating it.",
+                                        Zend_Log::ERR,
+                                        'vsbridge.log'
+                                    );
+                                }
+
+                                $updatedAdress['parent_id'] = $customer->getId();
+                                $updatedAdress['street'] = $addressHelper->concatStreetData($updatedAdress['street']);
+
+                                $sAddress->setData($updatedAdress)->save();
                             }
-                        }
                     }
                 }
                 $customer->load($customer->getId());
