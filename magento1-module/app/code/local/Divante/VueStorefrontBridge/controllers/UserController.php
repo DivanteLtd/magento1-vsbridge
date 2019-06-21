@@ -323,7 +323,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                         foreach($updatedCustomer['addresses'] as $updatedAdress) {
                             $updatedAdress['region'] = $updatedAdress['region']['region'];
 
-                            if($updatedAdress['delete'] === true) {
+                            if ($updatedAdress['delete'] === true) {
                                 try {
                                     $sAddress = Mage::getModel('customer/address');
 
@@ -337,24 +337,22 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                                         'vsbridge.log'
                                     );
                                 }
-                            } elseif($updatedAdress['default_billing']) {
+                            } elseif ($updatedAdress['default_billing']) {
                                 $bAddressId = $customer->getDefaultBilling();
                                 $bAddress = Mage::getModel('customer/address');
 
-                                if($bAddressId)
-                                    $bAddress->load($bAddressId);
+                                if ($bAddressId) $bAddress->load($bAddressId);
 
                                 $updatedAdress['parent_id'] = $customer->getId();
                                 $updatedAdress['street'] = $addressHelper->concatStreetData($updatedAdress['street']);
 
                                 $bAddress->setData($updatedAdress)->setIsDefaultBilling(1)->save();
                                 $updatedBillingId = $bAddress->getId();
-                            } elseif($updatedAdress['default_shipping']) {
+                            } elseif ($updatedAdress['default_shipping']) {
                                 $sAddressId = $customer->getDefaultShipping();
                                 $sAddress = Mage::getModel('customer/address');
 
-                                if($sAddressId)
-                                    $sAddress->load($sAddressId);
+                                if ($sAddressId) $sAddress->load($sAddressId);
 
                                 $updatedAdress['parent_id'] = $customer->getId();
                                 $updatedAdress['street'] = $addressHelper->concatStreetData($updatedAdress['street']);
@@ -381,6 +379,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
 
                                 $sAddress->setData($updatedAdress)->save();
                             }
+                        }
                     }
                 }
                 $customer->load($customer->getId());
