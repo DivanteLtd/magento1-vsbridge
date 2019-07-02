@@ -287,9 +287,12 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
         }
     }
 
-
+    /**
+     * Get all information for the current user or update some data of the user
+     */
     public function meAction(){
         $customer = $this->_currentCustomer($this->getRequest());
+
         if(!$customer) {
             return $this->_result(500, 'User is not authroized to access self');
         } else {
@@ -301,17 +304,17 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
             try {
                 if ($this->_checkHttpMethod(array('POST'))) { // modify user data
                     $request = _object_to_array($this->_getJsonBody());
+
                     if(!$request['customer']) {
                         return $this->_result(500, 'No customer data provided!');
                     }
 
-                    //die(print_r($customer->getData(), true));
                     $updatedCustomer = $request['customer'];
                     $updatedCustomer['entity_id'] = $customer->getId();
 
                     $customer->setData('firstname', $updatedCustomer['firstname'])
-                            ->setData('lastname', $updatedCustomer['lastname'])
-                            ->setData('email', $updatedCustomer['email']);
+                             ->setData('lastname', $updatedCustomer['lastname'])
+                             ->setData('email', $updatedCustomer['email']);
 
                     if (isset($updatedCustomer['dob'])) {
                         $customer->setData('dob', $updatedCustomer['dob']);
@@ -322,8 +325,75 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     if ($updatedCustomer['addresses']) {
                         foreach($updatedCustomer['addresses'] as $updatedAdress) {
                             $updatedAdress['region'] = $updatedAdress['region']['region'];
+                            $handled = false;
 
-                            if ($updatedAdress['delete'] === true) {
+                            if($updatedAdress['default_shipping'] && $updatedAdress['default_billing']) {
+                                $sAddressId = $customer->getDefaultShipping();
+                                $sAddress = Mage::getModel('customer/address');
+
+                                if($sAddressId) {
+                                    if (isset($updatedAdress['entity_id'])) {
+                                        $sAddressId = $updatedAdress['entity_id'];
+                                    }
+
+                                    $sAddress->load($sAddressId);
+                                }
+
+                                $updatedAdress['parent_id'] = $customer->getId();
+                                $updatedAdress['street'] = $addressHelper->concatStreetData($updatedAdress['street']);
+
+                                $sAddress->setData($updatedAdress)
+                                         ->setIsDefaultShipping(1)
+                                         ->setIsDefaultBilling(1)
+                                         ->save();
+                                $updatedShippingId = $sAddress->getId();
+                                $handled = true;
+                            } elseif($updatedAdress['default_shipping']) {
+                                $sAddressId = $customer->getDefaultShipping();
+                                $sAddress = Mage::getModel('customer/address');
+
+                                if($sAddressId) {
+                                    if (isset($updatedAdress['entity_id'])) {
+                                        $sAddressId = $updatedAdress['entity_id'];
+                                    }
+
+                                    $sAddress->load($sAddressId);
+                                }
+
+                                $updatedAdress['parent_id'] = $customer->getId();
+                                $updatedAdress['street'] = $addressHelper->concatStreetData($updatedAdress['street']);
+
+                                $sAddress->setData($updatedAdress)
+                                         ->setIsDefaultShipping(1)
+                                         ->setIsDefaultBilling(0)
+                                         ->save();
+                                $updatedShippingId = $sAddress->getId();
+                                $handled = true;
+                            } elseif($updatedAdress['default_billing']) {
+                                $bAddressId = $customer->getDefaultBilling();
+                                $bAddress = Mage::getModel('customer/address');
+
+                                if($bAddressId){
+                                    if (isset($updatedAdress['entity_id'])) {
+                                        $bAddressId = $updatedAdress['entity_id'];
+                                    }
+
+                                    $bAddress->load($bAddressId);
+                                }
+
+                                $updatedAdress['parent_id'] = $customer->getId();
+                                $updatedAdress['street'] = $addressHelper->concatStreetData($updatedAdress['street']);
+
+
+                                $bAddress->setData($updatedAdress)
+                                         ->setIsDefaultShipping(0)
+                                         ->setIsDefaultBilling(1)
+                                         ->save();
+                                $updatedBillingId = $bAddress->getId();
+                                $handled = true;
+                            }
+
+                            if($updatedAdress['delete'] === true) {
                                 try {
                                     $sAddress = Mage::getModel('customer/address');
 
@@ -337,29 +407,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                                         'vsbridge.log'
                                     );
                                 }
-                            } elseif ($updatedAdress['default_billing']) {
-                                $bAddressId = $customer->getDefaultBilling();
-                                $bAddress = Mage::getModel('customer/address');
-
-                                if ($bAddressId) $bAddress->load($bAddressId);
-
-                                $updatedAdress['parent_id'] = $customer->getId();
-                                $updatedAdress['street'] = $addressHelper->concatStreetData($updatedAdress['street']);
-
-                                $bAddress->setData($updatedAdress)->setIsDefaultBilling(1)->save();
-                                $updatedBillingId = $bAddress->getId();
-                            } elseif ($updatedAdress['default_shipping']) {
-                                $sAddressId = $customer->getDefaultShipping();
-                                $sAddress = Mage::getModel('customer/address');
-
-                                if ($sAddressId) $sAddress->load($sAddressId);
-
-                                $updatedAdress['parent_id'] = $customer->getId();
-                                $updatedAdress['street'] = $addressHelper->concatStreetData($updatedAdress['street']);
-
-                                $sAddress->setData($updatedAdress)->setIsDefaultShipping(1)->save();
-                                $updatedShippingId = $sAddress->getId();
-                            } else {
+                            } elseif (!$handled) {
                                 $sAddress = Mage::getModel('customer/address');
 
                                 try {
@@ -377,11 +425,16 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                                 $updatedAdress['parent_id'] = $customer->getId();
                                 $updatedAdress['street'] = $addressHelper->concatStreetData($updatedAdress['street']);
 
-                                $sAddress->setData($updatedAdress)->save();
+                                $sAddress->setData($updatedAdress)
+                                         ->setIsDefaultBilling(0)
+                                         ->setIsDefaultShipping(0)
+                                         ->save();
                             }
                         }
+                        $customer = $this->_currentCustomer($this->getRequest());
                     }
                 }
+
                 $customer->load($customer->getId());
                 $customerDTO = $customer->getData();
                 $subscription = Mage::getModel('newsletter/subscriber')->loadByCustomer($customer);
@@ -395,7 +448,6 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 foreach ($allAddress as $address) {
                     $addressDTO = $address->getData();
                     $addressDTO['id'] = $addressDTO['entity_id'];
-
                     $region = null;
 
                     if (isset($addressDTO['region'])) {
@@ -403,22 +455,23 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                     }
 
                     $addressDTO['region'] = ['region' => $region];
+                    $addressDTO['street'] = $addressHelper->splitStreetData($addressDTO['street']);
 
-                    $streetDTO = explode("\n", $addressDTO['street']);
-                    if(count($streetDTO) < 2)
-                        $streetDTO[]='';
-
-                    $addressDTO['street'] = $streetDTO;
                     if(!$addressDTO['firstname'])
                         $addressDTO['firstname'] = $customerDTO['firstname'];
+
                     if(!$addressDTO['lastname'])
                         $addressDTO['lastname'] = $customerDTO['lastname'];
+
                     if(!$addressDTO['city'])
                         $addressDTO['city'] = '';
+
                     if(!$addressDTO['country_id'])
                         $addressDTO['country_id'] = 'US';
+
                     if(!$addressDTO['postcode'])
                         $addressDTO['postcode'] = '';
+
                     if(!$addressDTO['telephone'])
                         $addressDTO['telephone'] = '';
 
@@ -428,18 +481,20 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                         // its customer default billing address
                         $addressDTO['default_billing'] = true;
                         $customerDTO['default_billing'] = $address->getId();
-                        $customerDTO['addresses'][] = $addressDTO;
-                    } else if($defaultShipping == $address->getId()|| $address->getId() == $updatedShippingId) {
+                    }
+
+                    if ($defaultShipping == $address->getId()|| $address->getId() == $updatedShippingId) {
                         // its customer default shipping address
                         $addressDTO['default_shipping'] = true;
                         $customerDTO['default_shipping'] = $address->getId();
-                        $customerDTO['addresses'][] = $addressDTO;
                     }
+
+                    $customerDTO['addresses'][] = $addressDTO;
+                    $customerDTO['id'] = $customerDTO['entity_id'];
                 }
 
-                $customerDTO['id'] = $customerDTO['entity_id'];
-
                 $filteredCustomerData = $this->_filterDTO($customerDTO, array('password', 'password_hash', 'password_confirmation', 'confirmation', 'entity_type_id'));
+
                 return $this->_result(200, $filteredCustomerData);
             } catch (Exception $err) {
                 return $this->_result(500, $err->getMessage());
