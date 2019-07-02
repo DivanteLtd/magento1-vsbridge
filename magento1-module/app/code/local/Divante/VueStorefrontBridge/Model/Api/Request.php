@@ -127,6 +127,10 @@ class Divante_VueStorefrontBridge_Model_Api_Request
                 $tokenData = JWT::decode($cartId, $secretKey, 'HS256');
                 $this->quote =  Mage::getModel('sales/quote')->load($tokenData->cartId);
             }
+
+            if (!(bool)$this->quote->getId()) {
+                $this->quote = null;
+            }
         }
 
         return $this->quote;
