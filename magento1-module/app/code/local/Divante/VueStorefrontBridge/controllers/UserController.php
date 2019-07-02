@@ -399,7 +399,7 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
 
                                     $sAddress->load($updatedAdress['entity_id']);
 
-                                    $sAddress->setData($updatedAdress)->delete();
+                                    $sAddress->delete();
                                 } catch (Throwable $exception) {
                                     Mage::log(
                                         'Cloud not load address:' . $updatedAdress['entity_id'] . " to delete it",
