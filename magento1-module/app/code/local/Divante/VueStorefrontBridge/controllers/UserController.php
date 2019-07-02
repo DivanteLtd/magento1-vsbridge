@@ -406,6 +406,11 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                                         Zend_Log::ERR,
                                         'vsbridge.log'
                                     );
+                                    Mage::log(
+                                        $exception,
+                                        Zend_Log::ERR,
+                                        'vsbridge.log'
+                                    );
                                 }
                             } elseif (!$handled) {
                                 $sAddress = Mage::getModel('customer/address');
@@ -417,6 +422,11 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                                 } catch (Exception $exception) {
                                     Mage::log(
                                         'Cloud not load address:' . $updatedAdress['entity_id'] . " for updating it.",
+                                        Zend_Log::ERR,
+                                        'vsbridge.log'
+                                    );
+                                    Mage::log(
+                                        $exception,
                                         Zend_Log::ERR,
                                         'vsbridge.log'
                                     );
