@@ -13,7 +13,9 @@ class Divante_VueStorefrontBridge_RewriteController extends Divante_VueStorefron
 
             $reader = Mage::getSingleton('core/resource')->getConnection('core_read');
             $select = $reader->select()
-                             ->from('core_url_rewrite', ['target_path'])->where('request_path = ?', $requestPath);
+                             ->from('core_url_rewrite', ['target_path'])
+                             ->where('request_path = ?', $requestPath)
+                             ->limit(1);
             $result = $reader->fetchOne($select);
 
             if ($result) {
