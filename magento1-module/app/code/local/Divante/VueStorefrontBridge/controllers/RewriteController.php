@@ -9,12 +9,15 @@ class Divante_VueStorefrontBridge_RewriteController extends Divante_VueStorefron
             return $this->_result(500, 'Only GET method allowed');
         }
         $requestPath = $this->getRequest()->getParam('request_path');
+        $storeId = $this->getRequest()->getParam('store_id');
         if ($requestPath) {
 
             $reader = Mage::getSingleton('core/resource')->getConnection('core_read');
             $select = $reader->select()
                              ->from('core_url_rewrite', ['target_path'])
                              ->where('request_path = ?', $requestPath)
+                             ->where('store_id IN (?)', ['0', $storeId])
+                             ->order('store_id DESC')
                              ->limit(1);
             $result = $reader->fetchOne($select);
 
