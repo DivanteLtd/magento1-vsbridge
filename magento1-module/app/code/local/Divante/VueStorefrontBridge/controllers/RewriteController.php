@@ -6,7 +6,7 @@ class Divante_VueStorefrontBridge_RewriteController extends Divante_VueStorefron
     {
 
         if (!$this->_checkHttpMethod('GET')) {
-            return $this->_result(500, 'Only GET method allowed');
+            return $this->_result(405, 'Method not allowed');
         }
         $requestPath = $this->getRequest()->getParam('request_path');
         $storeId = $this->getRequest()->getParam('store_id');
@@ -24,9 +24,11 @@ class Divante_VueStorefrontBridge_RewriteController extends Divante_VueStorefron
             if ($result) {
                 return $this->_result(200, $result);
             }
+            return $this->_result(404, 'No matching request path found');
         }
 
-        return $this->_result(500, 'Not possible to retrieve target location');
+        return $this->_result(400, 'Malforemd request');
+
     }
 
 }
