@@ -48,33 +48,135 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
     }
 
     /**
+     * Reset forgotten password
+     * Used to handle data recieved from reset forgotten password form
+     */
+    public function resetPasswordPostAction()
+    {
+        $customerId = (int)$this->getRequest()->getPost('id');
+        $resetPasswordLinkToken = (string)$this->getRequest()->getPost('token');
+        $password = (string)$this->getRequest()->getPost('password');
+        $passwordConfirmation = (string)$this->getRequest()->getPost('confirmation');
+
+        try {
+            $this->_validateResetPasswordLinkToken($customerId, $resetPasswordLinkToken);
+        } catch (Exception $exception) {
+            $this->_result(403, 'Your password reset link has expired.');
+            return;
+        }
+
+        $errorMessages = array();
+        if (iconv_strlen($password) <= 0) {
+            array_push($errorMessages, 'New password field cannot be empty.');
+        }
+        /** @var $customer Mage_Customer_Model_Customer */
+        $customer = $this->_getModel('customer/customer')->load($customerId);
+
+        $customer->setPassword($password);
+        $customer->setPasswordConfirmation($passwordConfirmation);
+        $validationErrorMessages = $customer->validateResetPassword();
+        if (is_array($validationErrorMessages)) {
+            $errorMessages = array_merge($errorMessages, $validationErrorMessages);
+        }
+
+        if (!empty($errorMessages)) {
+            $this->_result(500, implode(' ', $errorMessages));
+            return;
+        }
+
+        try {
+            // Empty current reset password token i.e. invalidate it
+            $customer->setRpToken(null);
+            $customer->setRpTokenCreatedAt(null);
+            $customer->cleanPasswordsValidationData();
+            $customer->setPasswordCreatedAt(time());
+            $customer->setRpCustomerId(null);
+            $customer->save();
+
+            $this->_result(200, 'Your password has been updated.');
+        } catch (Exception $exception) {
+            $this->_result(500, 'Cannot save a new password.!');
+            return;
+        }
+    }
+
+    /**
+     * Check if password reset token is valid
+     *
+     * @param int $customerId
+     * @param string $resetPasswordLinkToken
+     * @throws Mage_Core_Exception
+     */
+    protected function _validateResetPasswordLinkToken($customerId, $resetPasswordLinkToken)
+    {
+        if (!is_int($customerId)
+            || !is_string($resetPasswordLinkToken)
+            || empty($resetPasswordLinkToken)
+            || empty($customerId)
+            || $customerId < 0
+        ) {
+            throw Mage::exception('Mage_Core', $this->_getHelper('customer')->__('Invalid password reset token.'));
+        }
+
+        /** @var $customer Mage_Customer_Model_Customer */
+        $customer = $this->_getModel('customer/customer')->load($customerId);
+        if (!$customer || !$customer->getId()) {
+            throw Mage::exception('Mage_Core', $this->_getHelper('customer')->__('Wrong customer account specified.'));
+        }
+
+        $customerToken = $customer->getRpToken();
+        if (strcmp($customerToken, $resetPasswordLinkToken) != 0 || $customer->isResetPasswordLinkTokenExpired()) {
+            throw Mage::exception('Mage_Core', $this->_getHelper('customer')->__('Your password reset link has expired.'));
+        }
+    }
+
+    /**
+     * Get Helper
+     *
+     * @param string $path
+     * @return Mage_Core_Helper_Abstract
+     */
+    protected function _getHelper($path)
+    {
+        return Mage::helper($path);
+    }
+
+    /**
+     * Get model by path
+     *
+     * @param string $path
+     * @param array|null $arguments
+     * @return false|Mage_Core_Model_Abstract
+     */
+    public function _getModel($path, $arguments = array())
+    {
+        return Mage::getModel($path, $arguments);
+    }
+    /**
      * Send password reset link
      * https://github.com/DivanteLtd/magento1-vsbridge/blob/master/doc/VueStorefrontBridge%20API%20specs.md#post-vsbridgeuserresetpassword
      */
     public function resetPasswordAction()
     {
         if (!$this->_checkHttpMethod('POST')) {
-            return $this->_result(500, 'Only POST method allowed');
+            return $this->_result(405, 'Only POST method allowed');
         }
 
         $request = $this->_getJsonBody();
 
         if (!$request || !$request->email) {
-            return $this->_result(500, 'No e-mail provided');
+            return $this->_result(400, 'No e-mail provided');
         }
 
         if ($flowPassword = Mage::getModel('customer/flowpassword')) {
             if (!$flowPassword->checkCustomerForgotPasswordFlowEmail($request->email)) {
-                return $this->_result(500, $this->__('You have exceeded requests to times per 24 hours from 1 e-mail.'));
+                return $this->_result(429, 'You have exceeded the allowed amount of requests at this time.');
             }
 
             if (!$flowPassword->checkCustomerForgotPasswordFlowIp()) {
-                return $this->_result(500, $this->__('You have exceeded requests to times per hour from 1 IP.'));
+                return $this->_result(429, 'You have exceeded the allowed amount of requests at this time.');
             }
         }
-
-        /** @var  $helper */
-        $helper = Mage::helper('vsbridge');
 
         try {
             $customer = Mage::getModel('customer/customer')
@@ -82,18 +184,18 @@ class Divante_VueStorefrontBridge_UserController extends Divante_VueStorefrontBr
                 ->loadByEmail($request->email);
 
             if ($customer->getId()) {
+                $newResetPasswordLinkToken = $this->_getHelper('customer')->generateResetPasswordLinkToken();
+                $newResetPasswordLinkCustomerId = $this->_getHelper('customer')->generateResetPasswordLinkCustomerId($customer->getId());
+                $customer->changeResetPasswordLinkCustomerId($newResetPasswordLinkCustomerId);
+                $customer->changeResetPasswordLinkToken($newResetPasswordLinkToken);
                 $customer->sendPasswordResetConfirmationEmail();
 
                 return $this->_result(
-                    200,
-                    $helper->__(
-                        'If there is an account associated with %s you will receive an email with a link to reset your password.',
-                        $helper->escapeHtml($request->email)
-                    )
+                    200,"If there is an account associated with {$request->email} you will receive an email with a link to reset your password."
                 );
             }
 
-            return $this->_result(500, 'Wrong e-mail provided');
+            return $this->_result(403, 'Wrong e-mail provided');
         } catch (Exception $err) {
             return $this->_result(500, $err->getMessage());
         }
