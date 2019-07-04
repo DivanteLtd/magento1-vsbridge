@@ -261,7 +261,10 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
                 ],
                 JSON_NUMERIC_CHECK
             )
-        )->setHttpResponseCode($code)->setHeader('Content-Type', 'application/json');
+        )
+            ->setHttpResponseCode($code)
+            ->setHeader('Content-Type', 'application/json')
+            ->setHeader('Cache-Control', 'no-cache');
     }
 
     /**
