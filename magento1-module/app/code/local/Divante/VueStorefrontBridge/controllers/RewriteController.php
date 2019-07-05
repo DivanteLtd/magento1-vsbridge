@@ -16,6 +16,8 @@ class Divante_VueStorefrontBridge_RewriteController extends Divante_VueStorefron
                              ->from('core_url_rewrite', ['target_path'])
                              ->where('request_path = ?', $requestPath)
                              ->where('store_id IN (?)', [Mage_Core_Model_App::ADMIN_STORE_ID, (int)Mage::app()->getStore()->getId()])
+                             ->where('category_id is null')
+                             ->where('product_id is null')
                              ->order('store_id DESC')
                              ->limit(1);
 
