@@ -39,4 +39,16 @@ class Divante_VueStorefrontBridge_Model_Api_Cart_Item
 
         return $configurableOptions;
     }
+
+    public function getBundleOptions(Mage_Catalog_Model_Product_Configuration_Item_Interface $item)
+    {
+        $product = Mage::getModel('catalog/product')->load($item->getProduct()->getId());
+        if ($product->getTypeId() === 'bundle') {
+            $options = $item->getProduct()->getTypeInstance(true)
+                            ->getOrderOptions($item->getProduct())['bundle_options'];
+        }
+
+        return $options;
+
+    }
 }
