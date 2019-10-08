@@ -56,10 +56,14 @@ class Divante_VueStorefrontBridge_Model_Api_Cart
             ];
 
             $item['product_option']['extension_attributes'] = [
-                'configurable_item_options' => $this->cartItem->getConfigurableOptions($cartItem),
-                'bundle_options' => $this->cartItem->getBundleOptions($cartItem),
-
+                'configurable_item_options' => $this->cartItem->getConfigurableOptions($cartItem)
             ];
+            
+            if ($cartItem->getProductType() === Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
+                $item['product_option']['extension_attributes'] = [
+                    'bundle_options' => $this->cartItem->getBundleOptions($cartItem)
+                ];
+            }
 
             return $item;
         }
