@@ -37,34 +37,34 @@ abstract class Divante_VueStorefrontBridge_Helper_Mapper_Abstract extends Mage_C
             }
 
             if (in_array($key, $this->getAttributesToCastInt())) {
-                $dto[$key] = $dto[$key] != null ? intval($dto[$key]) : null;
+                $dto[$key] = $dto[$key] !== null ? intval($dto[$key]) : null;
                 $isCustom = true;
             }
 
             if (in_array($key, $this->getAttributesToCastBool())) {
-                $dto[$key] = $dto[$key] != null ? boolval($dto[$key]) : null;
+                $dto[$key] = $dto[$key] !== null ? boolval($dto[$key]) : null;
                 $isCustom = true;
             }
 
             if (in_array($key, $this->getAttributesToCastStr())) {
-                $dto[$key] = $dto[$key] != null ? strval($dto[$key]) : null;
+                $dto[$key] = $dto[$key] !== null ? strval($dto[$key]) : null;
                 $isCustom = true;
             }
 
             if (in_array($key, $this->getAttributesToCastFloat())) {
-                $dto[$key] = $dto[$key] != null ? floatval($dto[$key]) : null;
+                $dto[$key] = $dto[$key] !== null ? floatval($dto[$key]) : null;
                 $isCustom = true;
             }
 
             if (!$isCustom) {
                 // If beginning by "use", "has", ... , then must be a boolean (can be overriden using cast array)
                 if (preg_match('#^(use|has|is|enable|disable)_.*$#', $key)) {
-                    $dto[$key] = $dto[$key] != null ? boolval($value) : null;
+                    $dto[$key] = $dto[$key] !== null ? boolval($value) : null;
                 }
 
                 // If ending by "id", then must be an integer (can be overriden using cast array)
                 if (preg_match('#^.*_?id$#', $key)) {
-                    $dto[$key] = $dto[$key] != null ? intval($value) : null;
+                    $dto[$key] = $dto[$key] !== null ? intval($value) : null;
                 }
             }
         }
