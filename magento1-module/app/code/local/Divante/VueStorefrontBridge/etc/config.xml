@@ -30,6 +30,18 @@
                 <class>Divante_VueStorefrontBridge_Helper_Mapper</class>
             </vsbridge_mapper>
         </helpers>
+        <vsf_bridge>
+            <mapper>
+                <types>
+                    <!--address>
+                        <mapper>
+                            <add_custom_attribute_mapping>Divante_VueStorefrontIndexer_Helper_Mapper_CustomClass</add_custom_attribute_mapping>
+                            <filter_another_attribute>Divante_VueStorefrontIndexer_Helper_Mapper_SecondCustomClass</filter_another_attribute>
+                        </mapper>
+                    </address-->
+                </type>
+            </mapper>
+        </vsf_bridge>
     </global>
     <default>
         <vsbridge>

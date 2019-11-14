@@ -62,7 +62,22 @@ abstract class Divante_VueStorefrontBridge_Helper_Mapper_Abstract extends Mage_C
             }
         }
 
+        $this->callMapperExtensions($dto);
+
         return $dto;
+    }
+
+    /**
+     * Allow to extend the mappers using config.xml
+     *
+     * @param array $dto
+     * @return array
+     */
+    protected function callMapperExtensions(&$dto)
+    {
+        /** @var Divante_VueStorefrontBridge_Model_Config_Mapper $model */
+        $model = Mage::getModel('vsbridge/config_mapper');
+        return $model->applyExtendedMapping(self::MAPPER_IDENTIFIER, $dto);
     }
 
     /**

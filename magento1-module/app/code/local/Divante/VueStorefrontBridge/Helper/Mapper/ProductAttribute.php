@@ -12,6 +12,11 @@
 class Divante_VueStorefrontBridge_Helper_Mapper_ProductAttribute extends Divante_VueStorefrontBridge_Helper_Mapper_Abstract
 {
     /**
+     * Name to address custom mappers via config.xml
+     */
+    const MAPPER_IDENTIFIER = 'product_attribute';
+
+    /**
      * @inheritdoc
      */
     protected function getAttributesToCastInt()

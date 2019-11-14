@@ -12,6 +12,11 @@
 class Divante_VueStorefrontBridge_Helper_Mapper_Address extends Divante_VueStorefrontBridge_Helper_Mapper_Abstract
 {
     /**
+     * Name to address custom mappers via config.xml
+     */
+    const MAPPER_IDENTIFIER = 'address';
+
+    /**
      * @inheritdoc
      */
     protected function customDtoFiltering($dto)

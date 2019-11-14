@@ -12,6 +12,11 @@
 class Divante_VueStorefrontBridge_Helper_Mapper_Category extends Divante_VueStorefrontBridge_Helper_Mapper_Abstract
 {
     /**
+     * Name to address custom mappers via config.xml
+     */
+    const MAPPER_IDENTIFIER = 'category';
+
+    /**
      * @inheritdoc
      */
     protected function getBlacklist()
