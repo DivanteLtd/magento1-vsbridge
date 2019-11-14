@@ -13,8 +13,9 @@ class Divante_VueStorefrontBridge_Helper_Mapper_Order extends Divante_VueStorefr
 {
     /**
      * Name to address custom mappers via config.xml
+     * @var string $_mapperIdentifier
      */
-    const MAPPER_IDENTIFIER = 'order';
+    protected $_mapperIdentifier = 'order';
 
     /**
      * @inheritdoc

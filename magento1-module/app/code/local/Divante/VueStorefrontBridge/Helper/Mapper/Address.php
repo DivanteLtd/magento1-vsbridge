@@ -13,8 +13,9 @@ class Divante_VueStorefrontBridge_Helper_Mapper_Address extends Divante_VueStore
 {
     /**
      * Name to address custom mappers via config.xml
+     * @var string $_mapperIdentifier
      */
-    const MAPPER_IDENTIFIER = 'address';
+    protected $_mapperIdentifier = 'address';
 
     /**
      * @inheritdoc

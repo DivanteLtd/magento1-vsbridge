@@ -13,6 +13,7 @@ class Divante_VueStorefrontBridge_Helper_Mapper_WhishListItem extends Divante_Vu
 {
     /**
      * Name to address custom mappers via config.xml
+     * @var string $_mapperIdentifier
      */
-    const MAPPER_IDENTIFIER = 'whishlist_item';
+    protected $_mapperIdentifier = 'whishlist_item';
 }

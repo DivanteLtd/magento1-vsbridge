@@ -13,6 +13,7 @@ class Divante_VueStorefrontBridge_Helper_Mapper_Product extends Divante_VueStore
 {
     /**
      * Name to address custom mappers via config.xml
+     * @var string $_mapperIdentifier
      */
-    const MAPPER_IDENTIFIER = 'product';
+    protected $_mapperIdentifier = 'product';
 }

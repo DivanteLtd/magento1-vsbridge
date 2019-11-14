@@ -13,6 +13,7 @@ class Divante_VueStorefrontBridge_Helper_Mapper_Payment extends Divante_VueStore
 {
     /**
      * Name to address custom mappers via config.xml
+     * @var string $_mapperIdentifier
      */
-    const MAPPER_IDENTIFIER = 'payment';
+    protected $_mapperIdentifier = 'payment';
 }

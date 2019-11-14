@@ -44,7 +44,7 @@ class Divante_VueStorefrontBridge_Model_Config_Mapper
                     continue;
                 }
 
-                $initialDto = $model->filterDto($initialDto);
+                $initialDto = $model->filterDto($initialDto, false);
             }
         }
 

@@ -13,8 +13,9 @@ class Divante_VueStorefrontBridge_Helper_Mapper_ProductAttribute extends Divante
 {
     /**
      * Name to address custom mappers via config.xml
+     * @var string $_mapperIdentifier
      */
-    const MAPPER_IDENTIFIER = 'product_attribute';
+    protected $_mapperIdentifier = 'product_attribute';
 
     /**
      * @inheritdoc

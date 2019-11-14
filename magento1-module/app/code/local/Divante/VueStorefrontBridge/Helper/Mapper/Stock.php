@@ -13,8 +13,9 @@ class Divante_VueStorefrontBridge_Helper_Mapper_Stock extends Divante_VueStorefr
 {
     /**
      * Name to address custom mappers via config.xml
+     * @var string $_mapperIdentifier
      */
-    const MAPPER_IDENTIFIER = 'stock';
+    protected $_mapperIdentifier = 'stock';
 
     /**
      * @inheritdoc

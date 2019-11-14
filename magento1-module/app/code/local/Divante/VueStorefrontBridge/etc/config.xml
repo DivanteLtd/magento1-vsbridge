@@ -35,11 +35,11 @@
                 <types>
                     <!--address>
                         <mapper>
-                            <add_custom_attribute_mapping>Divante_VueStorefrontIndexer_Helper_Mapper_CustomClass</add_custom_attribute_mapping>
-                            <filter_another_attribute>Divante_VueStorefrontIndexer_Helper_Mapper_SecondCustomClass</filter_another_attribute>
+                            <add_custom_attribute_mapping>Divante_VueStorefrontBridge_Helper_Mapper_CustomClass</add_custom_attribute_mapping>
+                            <filter_another_attribute>Divante_VueStorefrontBridge_Helper_Mapper_SecondCustomClass</filter_another_attribute>
                         </mapper>
                     </address-->
-                </type>
+                </types>
             </mapper>
         </vsf_bridge>
     </global>

@@ -13,8 +13,9 @@ class Divante_VueStorefrontBridge_Helper_Mapper_TaxruleRate extends Divante_VueS
 {
     /**
      * Name to address custom mappers via config.xml
+     * @var string $_mapperIdentifier
      */
-    const MAPPER_IDENTIFIER = 'taxrule_rate';
+    protected $_mapperIdentifier = 'taxrule_rate';
 
     /**
      * @inheritdoc

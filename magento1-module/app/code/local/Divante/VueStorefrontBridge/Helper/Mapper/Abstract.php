@@ -11,13 +11,20 @@
 abstract class Divante_VueStorefrontBridge_Helper_Mapper_Abstract extends Mage_Core_Helper_Abstract
 {
     /**
+     * Name to address custom mappers via config.xml
+     * @var string $_mapperIdentifier
+     */
+    protected $_mapperIdentifier = '';
+
+    /**
      * Get and process Dto from entity
      *
      * @param array $initialDto
+     * @param bool $callMapperExtensions
      *
      * @return array
      */
-    final public function filterDto($initialDto)
+    final public function filterDto($initialDto, $callMapperExtensions = true)
     {
         $dto = $this->customDtoFiltering($initialDto);
 
@@ -62,7 +69,9 @@ abstract class Divante_VueStorefrontBridge_Helper_Mapper_Abstract extends Mage_C
             }
         }
 
-        $this->callMapperExtensions($dto);
+        if ($callMapperExtensions) {
+            $this->callMapperExtensions($dto);
+        }
 
         return $dto;
     }
@@ -77,7 +86,7 @@ abstract class Divante_VueStorefrontBridge_Helper_Mapper_Abstract extends Mage_C
     {
         /** @var Divante_VueStorefrontBridge_Model_Config_Mapper $model */
         $model = Mage::getModel('vsbridge/config_mapper');
-        return $model->applyExtendedMapping(self::MAPPER_IDENTIFIER, $dto);
+        return $model->applyExtendedMapping($this->_mapperIdentifier, $dto);
     }
 
     /**
