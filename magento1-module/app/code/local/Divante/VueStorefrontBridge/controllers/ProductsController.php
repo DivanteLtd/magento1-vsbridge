@@ -17,26 +17,6 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
     {
         if ($this->_authorizeAdminUser($this->getRequest())) {
             $params = $this->_processParams($this->getRequest());
-            $confChildBlacklist = [
-                'entity_id',
-                'id',
-                'type_id',
-                'updated_at',
-                'created_at',
-                'stock_item',
-                'short_description',
-                'page_layout',
-                'news_from_date',
-                'news_to_date',
-                'meta_description',
-                'meta_keyword',
-                'meta_title',
-                'description',
-                'attribute_set_id',
-                'entity_type_id',
-                'has_options',
-                'required_options',
-            ];
 
             $result = [];
             $productCollection = Mage::getModel('catalog/product')
@@ -91,7 +71,7 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                             $productDTO[$productAttribute['attribute_code'] . '_options'] = $availableOptions;
                         }
 
-                        $childDTO = $this->_filterDTO($childDTO, $confChildBlacklist);
+                        $childDTO = Mage::helper('vsbridge_mapper/productChild')->filterDto($childDTO);
                         $productDTO['configurable_children'][] = $childDTO;
                     }
                 }
@@ -101,14 +81,17 @@ class Divante_VueStorefrontBridge_ProductsController extends Divante_VueStorefro
                 $productDTO['category_ids'] = [];
                 foreach ($cats as $category_id) {
                     $cat = Mage::getModel('catalog/category')->load($category_id);
-                    $productDTO['category'][] = [
+                    $categoryDTO = [
                         'category_id' => $cat->getId(),
                         'name' => $cat->getName()
                     ];
+                    $categoryDTO = Mage::helper('vsbridge_mapper/category')->filterDto($categoryDTO);
+
+                    $productDTO['category'][] = $categoryDTO;
                     $productDTO['category_ids'][] = $category_id;
                 }
 
-                $productDTO = $this->_filterDTO($productDTO);
+                $productDTO = Mage::helper('vsbridge_mapper/product')->filterDto($productDTO);
                 $result[] = $productDTO;
             }
 

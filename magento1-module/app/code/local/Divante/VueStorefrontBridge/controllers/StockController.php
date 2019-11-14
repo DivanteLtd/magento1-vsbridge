@@ -34,9 +34,10 @@ class Divante_VueStorefrontBridge_StockController extends Divante_VueStorefrontB
             $product_id = Mage::getModel('catalog/product')->getIdBySku($sku);
             $product = Mage::getModel('catalog/product')->load($product_id);
             $stock = $product->getStockItem();
+
             $stockDTO = $stock->getData();
-            $stockDTO['is_in_stock'] = boolval($stockDTO['is_in_stock']);
             $stockDTO['notify_stock_qty'] = $stock->getNotifyStockQty();
+            $stockDTO = Mage::helper('vsbridge_mapper/stock')->filterDto($stockDTO);
 
             return $this->_result(200, $stockDTO);
         } catch (Exception $err) {

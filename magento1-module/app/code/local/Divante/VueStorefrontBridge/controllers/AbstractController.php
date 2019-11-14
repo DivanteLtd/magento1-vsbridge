@@ -224,27 +224,7 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
 
         return $paramsDTO;
     }
-    /**
-     * Filters parameters map removing blacklisted
-     *
-     * @param array      $dtoToFilter
-     * @param array|null $blackList
-     *
-     * @return mixed
-     */
-    protected function _filterDTO(array $dtoToFilter, array $blackList = null)
-    {
-        foreach ($dtoToFilter as $key => $val) {
-            if ($blackList && in_array($key, $blackList)) {
-                unset ($dtoToFilter[$key]);
-            } else {
-                if (strstr($key, 'is_') || strstr($key, 'has_')) {
-                    $dtoToFilter[$key] = boolval($val);
-                }
-            }
-        }
-        return $dtoToFilter;
-    }
+
     /**
      * Sends back code and result of performed operation
      *
@@ -258,8 +238,7 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
                 [
                     'code'   => $code,
                     'result' => $result,
-                ],
-                JSON_NUMERIC_CHECK
+                ]
             )
         )
             ->setHttpResponseCode($code)

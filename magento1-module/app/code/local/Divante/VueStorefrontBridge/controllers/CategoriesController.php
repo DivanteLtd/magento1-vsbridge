@@ -37,23 +37,6 @@ class Divante_VueStorefrontBridge_CategoriesController extends Divante_VueStoref
     }
 
     /**
-     * Prepares category entity data
-     *
-     * @param Mage_Catalog_Model_Category $category
-     *
-     * @return mixed
-     */
-    protected function _prepareDTO(Mage_Catalog_Model_Category $category)
-    {
-        $categoryDTO       = $category->getData();
-        $categoryDTO['id'] = intval($categoryDTO['entity_id']);
-        unset($categoryDTO['entity_id']);
-        unset($categoryDTO['path']);
-
-        return $categoryDTO;
-    }
-
-    /**
      * Processes category data
      *
      * @param Mage_Catalog_Model_Category $category
@@ -63,16 +46,16 @@ class Divante_VueStorefrontBridge_CategoriesController extends Divante_VueStoref
      */
     protected function _processCategory(Mage_Catalog_Model_Category $category, $level = 0)
     {
-        $childCats               = $category->getChildrenCategories();
-        $catDTO                  = $this->_prepareDTO($category);
+        $catDTO                  = $category->getData();
+        $catDTO['id']            = $catDTO['entity_id'];
         $catDTO['children_data'] = [];
-        foreach ($childCats as $childCategory) {
+
+        foreach ($category->getChildrenCategories() as $childCategory) {
             $catDTO['children_data'][] = $this->_processCategory($childCategory, $level + 1);
         }
+
         // $catDTO['level'] = $level;
         $catDTO['children_count'] = count($catDTO['children_data']);
-        $catDTO                   = $this->_filterDTO($catDTO);
-
-        return $catDTO;
+        return Mage::helper('vsbridge_mapper/category')->filterDto($catDTO);
     }
 }

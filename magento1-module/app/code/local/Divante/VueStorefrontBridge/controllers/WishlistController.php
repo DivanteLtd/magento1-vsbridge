@@ -226,7 +226,7 @@ class Divante_VueStorefrontBridge_WishlistController extends Divante_VueStorefro
             'wishlist_item_id' => $item->getId(),
         ];
 
-        return $wishListDTO;
+        return Mage::helper('vsbridge_mapper/whishListItem')->filterDto($wishListDTO);
     }
 
     /**

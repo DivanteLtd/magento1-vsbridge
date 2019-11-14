@@ -50,7 +50,8 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
                 /** @var Mage_Catalog_Model_Resource_Eav_Attribute $productAttr */
                 $attribute = Mage::getSingleton('eav/config')
                     ->getAttribute(Mage_Catalog_Model_Product::ENTITY, $productAttr->getAttributeCode());
-                $options   = [];
+
+                $options = [];
                 if ($attribute->usesSource()) {
                     $options = $attribute->getSource()->getAllOptions(false);
                 }
@@ -61,11 +62,11 @@ class Divante_VueStorefrontBridge_AttributesController extends Divante_VueStoref
                     continue;
                 } // exception - this attribute has string typed values; this is not acceptable by VS
 
-                $productAttrDTO['id']            = intval($productAttr->getAttributeId());
+                $productAttrDTO['id']            = $productAttr->getAttributeId();
                 $productAttrDTO['options']       = $options;
                 $productAttrDTO['default_value'] = (int)$productAttrDTO['default_value'];
-                $productAttrDTO                  = $this->_filterDTO($productAttrDTO);
-                $attrList[]                      = $productAttrDTO;
+
+                $attrList[] = Mage::helper('vsbridge_mapper/productAttribute')->filterDto($productAttrDTO);
             }
             $this->_result(200, $attrList);
         }
