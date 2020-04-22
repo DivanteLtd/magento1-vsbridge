@@ -90,7 +90,13 @@ class Divante_VueStorefrontBridge_Model_Api_Order_Create
             ->collectShippingRates();
         // Set shipping and payment method on quote shipping address data
         $shippingAddressData->setShippingMethod($shippingMethod)->setPaymentMethod($paymentMethodCode);
-        $this->quote->getPayment()->importData(['method' => $paymentMethodCode]);
+
+        $this->quote->getPayment()->importData(
+            [
+                'method' => $paymentMethodCode,
+                'additional_information' => (array)$requestPayload->addressInformation->payment_method_additional,
+            ]
+        );
 
         $this->quote->getShippingAddress()->setCollectShippingRates(true);
         $this->quote->collectTotals();
