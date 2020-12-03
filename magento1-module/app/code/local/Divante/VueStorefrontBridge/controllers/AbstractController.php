@@ -253,15 +253,20 @@ class Divante_VueStorefrontBridge_AbstractController extends Mage_Core_Controlle
      */
     protected function _result($code, $result)
     {
-        $this->getResponse()->setBody(
-            json_encode(
-                [
-                    'code'   => $code,
-                    'result' => $result,
-                ],
-                JSON_NUMERIC_CHECK
-            )
-        )
+        $bodyRequest = json_encode(
+            [
+                'code'   => $code,
+                'result' => $result,
+            ],
+            JSON_NUMERIC_CHECK
+        );
+        
+        if ($bodyRequest === false) {
+            // If the json encode with numeric check option fail, I encode without that option
+            $bodyRequest = json_encode([ 'code' => $code, 'result' => $result ]);
+        }
+        
+        $this->getResponse()->setBody($bodyRequest)
             ->setHttpResponseCode($code)
             ->setHeader('Content-Type', 'application/json')
             ->setHeader('Cache-Control', 'no-cache');
