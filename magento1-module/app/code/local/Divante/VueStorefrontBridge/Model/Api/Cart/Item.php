@@ -39,4 +39,25 @@ class Divante_VueStorefrontBridge_Model_Api_Cart_Item
 
         return $configurableOptions;
     }
+
+    /**
+     * @param Mage_Catalog_Model_Product_Configuration_Item_Interface $item
+     *
+     * @return array
+     */
+    public function getBundleOptions(Mage_Catalog_Model_Product_Configuration_Item_Interface $item)
+    {
+        $result = [];
+        if ($item->getProductType() === Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
+            foreach ($item->getData('qty_options') as $options) {
+                $product = $options->getData('product');
+                $selectionId = $product->getSelectionId();
+                $result[$selectionId] = ['option_id' => $selectionId, 'option_qty' => $options->getValue(), 'option_selections' => [
+                    $product->getOptionId()
+                ]];
+            }
+        }
+
+        return $result;
+    }
 }
