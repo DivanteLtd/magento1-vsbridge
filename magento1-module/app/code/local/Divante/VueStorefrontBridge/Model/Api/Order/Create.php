@@ -56,7 +56,7 @@ class Divante_VueStorefrontBridge_Model_Api_Order_Create
         $shippingAddress = (array)$requestPayload->addressInformation->shippingAddress;
 
         // Assign customer if exists
-        if (!$customer) {
+        if (!$this->customer) {
             $this->quote->setCustomerIsGuest(true);
         } else {
             $this->quote->setCustomerIsGuest(false);
