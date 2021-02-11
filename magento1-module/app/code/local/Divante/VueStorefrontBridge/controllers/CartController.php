@@ -205,7 +205,6 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
 
     /**
      * Get Quote totals and Collect totals and set shipping information
-     * https://github.com/DivanteLtd/magento1-vsbridge/blob/master/doc/VueStorefrontBridge%20API%20specs.md#post-vsbridgecartcollect-totals
      * https://github.com/DivanteLtd/magento1-vsbridge/blob/master/doc/VueStorefrontBridge%20API%20specs.md#get-vsbridgecarttotals
      * https://github.com/DivanteLtd/magento1-vsbridge/blob/master/doc/VueStorefrontBridge%20API%20specs.md#post-vsbridgecartshipping-information
      */
@@ -223,35 +222,24 @@ class Divante_VueStorefrontBridge_CartController extends Divante_VueStorefrontBr
             $quoteObj = $this->requestModel->currentQuote($this->getRequest());
             $request = $this->_getJsonBody();
 
-            if ($request && isset($request->methods)) {
-                $paymentMethodCode = $request->methods->paymentMethod->method;
-                $shippingMethodCode = $request->methods->shippingMethodCode;
+            if ($request && isset($request->addressInformation)) {
+                $shippingAddress = $quoteObj->getShippingAddress();
 
-                $address = null;
+                $shippingMethodCarrier = $request->addressInformation->shippingCarrierCode;
+                $shippingMethodCode = $request->addressInformation->shippingMethodCode;
 
-                if ($quoteObj->isVirtual()) {
-                    $address = $quoteObj->getBillingAddress();
-                } else {
-                    $address = $quoteObj->getShippingAddress();
-                    $shippingAddress = $quoteObj->getShippingAddress();
+                $shippingMethod = $shippingMethodCarrier . '_' . $shippingMethodCode;
 
-                    if ($request->addressInformation) {
-                        $shippingMethodCode = $request->addressInformation->shipping_method_code;
-                        $countryId = $request->addressInformation->shipping_address->country_id;
+                $countryId = $request->addressInformation->shippingAddress->countryId;
 
-                        if ($countryId) {
-                            $shippingAddress->setCountryId($countryId)->setCollectShippingrates(true)->save();
-                        }
-                    }
-
-                    $shippingAddress->setCollectShippingRates(true)
-                        ->collectShippingRates()
-                        ->setShippingMethod($shippingMethodCode);
+                if ($countryId) {
+                    $shippingAddress->setCountryId($countryId)->setCollectShippingrates(true)->save();
                 }
 
-                if ($address && $paymentMethodCode) {
-                    $address->setPaymentMethod($paymentMethodCode);
-                }
+                $shippingAddress->setCollectShippingRates(true)
+                    ->collectShippingRates()
+                    ->setShippingMethod($shippingMethod);
+
             } else {
                 $quoteObj->getShippingAddress()->setCollectShippingRates(true)->collectShippingRates();
             }
